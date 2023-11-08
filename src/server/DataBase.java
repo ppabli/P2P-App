@@ -2,6 +2,7 @@ package src.server;
 
 import src.model.FriendRequest;
 import src.model.User;
+
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -54,17 +55,18 @@ public class DataBase {
 
 			boolean alreadyOneRequest = false;
 
-			ArrayList<FriendRequest> requests = this.getFriendRequest(user1.getId());
+			ArrayList<FriendRequest> requests = this.getFriendRequest(user2.getId());
 
-			for(FriendRequest request : requests) {
+			for (FriendRequest request : requests) {
 
-				if (request.getName() == user2.getName()) {
+				if (request.getName().equals(user1.getName())) {
 
 					alreadyOneRequest = true;
 
 					break;
 
 				}
+
 			}
 
 			if (alreadyOneRequest) {
@@ -91,6 +93,109 @@ public class DataBase {
 
 			System.out.println("Database | Error: " + e.getMessage());
 			return null;
+
+		}
+
+	}
+
+	public boolean acceptFriendRequest(int requestId, String name, String friendName) {
+
+		try {
+
+			User user1 = this.getUser(name);
+			User user2 = this.getUser(friendName);
+
+			PreparedStatement statement = this.con.prepareStatement("select * from friend_requests where id = ? and user_id = ? and friend_id = ?");
+
+			statement.setInt(1, requestId);
+			statement.setInt(2, user2.getId());
+			statement.setInt(3, user1.getId());
+
+			ResultSet rs = statement.executeQuery();
+
+			if (rs.next()) {
+
+				// Borramos la peticion
+				statement = this.con.prepareStatement("delete from friend_requests where id = ? and user_id = ? and friend_id = ?");
+
+				statement.setInt(1, requestId);
+				statement.setInt(2, user2.getId());
+				statement.setInt(3, user1.getId());
+
+				int res = statement.executeUpdate();
+
+				if (res > 0) {
+
+					statement = this.con.prepareStatement("insert into friends (user_id, friend_id) values (?, ?), (?, ?)");
+
+					statement.setInt(1, user1.getId());
+					statement.setInt(2, user2.getId());
+					statement.setInt(3, user2.getId());
+					statement.setInt(4, user1.getId());
+
+					res = statement.executeUpdate();
+
+					return res > 0;
+
+				} else {
+
+					return false;
+
+				}
+
+			} else {
+
+				return false;
+
+			}
+
+		} catch (Exception e) {
+
+			System.out.println("Database | Error: " + e.getMessage());
+			return false;
+
+		}
+
+	}
+
+	public boolean declineFriendRequest(int requestId, String name, String friendName) {
+
+		try {
+
+			User user1 = this.getUser(name);
+			User user2 = this.getUser(friendName);
+
+			PreparedStatement statement = this.con.prepareStatement("select * from friend_requests where id = ? and user_id = ? and friend_id = ?");
+
+			statement.setInt(1, requestId);
+			statement.setInt(2, user2.getId());
+			statement.setInt(3, user1.getId());
+
+			ResultSet rs = statement.executeQuery();
+
+			if (rs.next()) {
+
+				// Borramos la peticion
+				statement = this.con.prepareStatement("delete from friend_requests where id = ? and user_id = ? and friend_id = ?");
+
+				statement.setInt(1, requestId);
+				statement.setInt(2, user2.getId());
+				statement.setInt(3, user1.getId());
+
+				int res = statement.executeUpdate();
+
+				return res > 0;
+
+			} else {
+
+				return false;
+
+			}
+
+		} catch (Exception e) {
+
+			System.out.println("Database | Error: " + e.getMessage());
+			return false;
 
 		}
 

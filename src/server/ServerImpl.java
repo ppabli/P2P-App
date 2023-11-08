@@ -1,6 +1,5 @@
 package src.server;
 
-import src.client.Client;
 import src.client.ClientInterface;
 import src.model.FriendRequest;
 import src.model.User;
@@ -27,7 +26,7 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 	}
 
 	@Override
-	public User login(ClientInterface client, String name, String password) throws RemoteException {
+	public synchronized User login(ClientInterface client, String name, String password) throws RemoteException {
 
 		// Obtenemos los datos basicos del usuario
 		User user = db.getUserWithPassword(name, password);
@@ -36,17 +35,31 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 			return null;
 		}
 
+		// Si ese usuario ya esta conectado
+		if(this.clients.get(user.hashCode()) != null) {
+			return null;
+		}
+
 		// Obtenemos la lista de amigos de la base de datos
 		ArrayList<User> userFriends = db.getFriends(user.getId());
 
 		// Creamos un array con los clientes que tenemos conectamos que sean amigos
-		ArrayList<ClientInterface> friendsClients = new ArrayList<>();
+		HashMap<User, ClientInterface> friendsClients = new HashMap<>();
 
 		// Iteramos por la lista de amigos buscando los que esten conectados
 		for (User friend : userFriends) {
 
+			ClientInterface friendClient = this.clients.get(friend.hashCode());
+
+			if (friendClient == null) {
+				continue;
+			}
+
 			// Buscamos en los clientes conectados segun el nombre del amigo
-			friendsClients.add(this.clients.get(friend.hashCode()));
+			friendsClients.put(friend, friendClient);
+
+			//Notificamos la conexion al amigo
+			friendClient.notifyConnectedFriend(client, user);
 
 		}
 
@@ -56,7 +69,7 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 		User finalUser = new User(user.getId(), user.getName(), friendsClients, friendRequests);
 
 		// Guardamos el nuevo usuario conectado
-		this.clients.put(user.getId(), client);
+		this.clients.put(user.hashCode(), client);
 
 		return finalUser;
 
@@ -73,7 +86,7 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 
 		}
 
-		return client.equals(this.clients.get(user.getId()));
+		return client.equals(this.clients.get(user.hashCode()));
 
 	}
 
@@ -85,13 +98,19 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 	}
 
 	@Override
-	public void logout(ClientInterface client, int userId) throws RemoteException {
+	public synchronized void logout(ClientInterface client, User user) throws RemoteException {
 
-		ClientInterface value = this.clients.get(userId);
+		ClientInterface value = this.clients.get(user.hashCode());
 
-		if (value == client) {
+		if (value != null && client.equals(value)) {
 
-			this.clients.remove(userId);
+			this.clients.remove(user.hashCode());
+
+		}
+
+		for (ClientInterface friendClient : user.getConnectedFriends().values()) {
+
+			friendClient.notifyDisconnectedFriend(user);
 
 		}
 
@@ -114,7 +133,7 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 
 		User friend = this.db.getUser(friendName);
 
-		ClientInterface friendClient = this.clients.get(friend.getId());
+		ClientInterface friendClient = this.clients.get(friend.hashCode());
 
 		if (friendClient != null) {
 
@@ -127,7 +146,46 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 	}
 
 	@Override
-	public void approveFriendRequest(ClientInterface client, int requestId, String friendName, String userName, String password) {
+	public boolean acceptFriendRequest(ClientInterface client, int requestId, String friendName, String name, String password) throws RemoteException {
+
+		boolean valid = this.validateRequest(client, name, password);
+
+		if (!valid) {
+			return false;
+		}
+
+		boolean res = this.db.acceptFriendRequest(requestId, name, friendName);
+
+		if (!res) {
+			return false;
+		}
+
+		User me = this.db.getUser(name);
+		User friend = this.db.getUser(friendName);
+
+		ClientInterface friendClient = this.clients.get(friend.hashCode());
+
+		if (friendClient == null) {
+			return true;
+		}
+
+		client.notifyConnectedFriend(friendClient, friend);
+		friendClient.notifyConnectedFriend(client, me);
+
+		return true;
+
+	}
+
+	@Override
+	public boolean declineFriendRequest(ClientInterface client, int requestId, String friendName, String name, String password) throws RemoteException {
+
+		boolean valid = this.validateRequest(client, name, password);
+
+		if (!valid) {
+			return false;
+		}
+
+		return this.db.declineFriendRequest(requestId, name, friendName);
 
 	}
 

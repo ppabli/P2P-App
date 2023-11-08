@@ -92,16 +92,6 @@ public class Login extends JDialog {
 
 		dispose();
 
-		try {
-
-			UnicastRemoteObject.unexportObject(this.client, true);
-
-		} catch (NoSuchObjectException e) {
-
-			throw new RuntimeException(e);
-
-		}
-
 	}
 
 }

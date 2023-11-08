@@ -98,12 +98,68 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
 		try {
 
-			this.serverObject.logout(this, this.user.getId());
+			this.serverObject.logout(this, this.user);
 
 		} catch (Exception e) {
 
 			System.out.println("Client | Error: " + e.getMessage());
 
+		}
+
+	}
+
+	public boolean requestAcceptFriendRequest(int requestId, String friendName, String name, String password) {
+
+		try {
+
+			boolean res = this.serverObject.acceptFriendRequest(this, requestId, friendName, name, password);
+
+			if (!res) {
+				return false;
+			}
+
+			this.user.removeFriendRequest(requestId);
+
+			for(Observer observer : this.observers) {
+
+				observer.updateFriendRequests();
+
+			}
+
+			return true;
+
+		} catch (Exception e) {
+
+			System.out.println("Client | Error: " + e.getMessage());
+			return false;
+		}
+
+	}
+
+	public boolean requestDeclineFriendRequest(int requestId, String friendName, String name, String password) {
+
+		try {
+
+			boolean res = this.serverObject.declineFriendRequest(this, requestId, friendName, name, password);
+
+			if (!res) {
+				return false;
+			}
+
+			this.user.removeFriendRequest(requestId);
+
+			for(Observer observer : this.observers) {
+
+				observer.updateFriendRequests();
+
+			}
+
+			return true;
+
+		} catch (Exception e) {
+
+			System.out.println("Client | Error: " + e.getMessage());
+			return false;
 		}
 
 	}
@@ -128,6 +184,27 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
 	@Override
 	public void notifyConnectedFriend(ClientInterface client, User user) throws RemoteException {
+
+		this.user.addConnectedFriend(user, client);
+
+		for(Observer observer : this.observers) {
+
+			observer.updateConnectedFriends();
+
+		}
+
+	}
+
+	@Override
+	public void notifyDisconnectedFriend(User user) throws RemoteException {
+
+		this.user.removeConnectedFriend(user);
+
+		for(Observer observer : this.observers) {
+
+			observer.updateConnectedFriends();
+
+		}
 
 	}
 

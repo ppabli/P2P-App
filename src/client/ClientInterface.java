@@ -13,4 +13,6 @@ public interface ClientInterface extends Remote {
 
 	void notifyConnectedFriend(ClientInterface client, User user) throws RemoteException;
 
+	void notifyDisconnectedFriend(User user) throws RemoteException;
+
 }

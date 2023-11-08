@@ -4,13 +4,14 @@ import src.client.ClientInterface;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 public class User implements Serializable {
 
 	private final int id;
 	private final String name;
-	private final ArrayList<ClientInterface> connectedFriends;
+	private final HashMap<User, ClientInterface> connectedFriends;
 	private final ArrayList<FriendRequest> friendRequests;
 
 	public User(int id, String name) {
@@ -18,12 +19,12 @@ public class User implements Serializable {
 		this.id = id;
 		this.name = name;
 
-		this.connectedFriends = new ArrayList<>();
+		this.connectedFriends = new HashMap<>();
 		this.friendRequests = new ArrayList<>();
 
 	}
 
-	public User(int id, String name, ArrayList<ClientInterface> connectedFriends) {
+	public User(int id, String name, HashMap<User, ClientInterface> connectedFriends) {
 
 		this.id = id;
 		this.name = name;
@@ -33,7 +34,7 @@ public class User implements Serializable {
 
 	}
 
-	public User(int id, String name, ArrayList<ClientInterface> connectedFriends, ArrayList<FriendRequest> friendRequests) {
+	public User(int id, String name, HashMap<User, ClientInterface> connectedFriends, ArrayList<FriendRequest> friendRequests) {
 
 		this.id = id;
 		this.name = name;
@@ -55,7 +56,7 @@ public class User implements Serializable {
 
 	}
 
-	public ArrayList<ClientInterface> getConnectedFriends() {
+	public HashMap<User, ClientInterface>  getConnectedFriends() {
 
 		return connectedFriends;
 
@@ -97,6 +98,40 @@ public class User implements Serializable {
 	public void addFriendRequest(FriendRequest request) {
 
 		this.friendRequests.add(request);
+
+	}
+
+	public void addConnectedFriend(User user, ClientInterface client) {
+
+		this.connectedFriends.put(user, client);
+
+	}
+
+	public void removeConnectedFriend(User user) {
+
+		this.connectedFriends.remove(user);
+
+	}
+
+	public void removeFriendRequest(int requestId) {
+
+		FriendRequest friendRequest = null;
+
+		for (FriendRequest request : this.friendRequests) {
+
+			if (request.getId() == requestId) {
+
+				friendRequest = request;
+
+			}
+
+		}
+
+		if (friendRequest != null) {
+
+			this.friendRequests.remove(friendRequest);
+
+		}
 
 	}
 
