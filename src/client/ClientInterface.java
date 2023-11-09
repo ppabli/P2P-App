@@ -7,7 +7,7 @@ import java.rmi.*;
 
 public interface ClientInterface extends Remote {
 
-	void notifyMessage() throws RemoteException;
+	void notifyMessage(ClientInterface friendClient, User user, String message) throws RemoteException;
 
 	void notifyFriendRequest(FriendRequest request) throws RemoteException;
 

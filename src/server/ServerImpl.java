@@ -1,6 +1,7 @@
 package src.server;
 
 import src.client.ClientInterface;
+import src.model.Chat;
 import src.model.FriendRequest;
 import src.model.User;
 
@@ -45,6 +46,7 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 
 		// Creamos un array con los clientes que tenemos conectamos que sean amigos
 		HashMap<User, ClientInterface> friendsClients = new HashMap<>();
+		HashMap<User, Chat> chats = new HashMap<>();
 
 		// Iteramos por la lista de amigos buscando los que esten conectados
 		for (User friend : userFriends) {
@@ -57,6 +59,7 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 
 			// Buscamos en los clientes conectados segun el nombre del amigo
 			friendsClients.put(friend, friendClient);
+			chats.put(friend, new Chat());
 
 			//Notificamos la conexion al amigo
 			friendClient.notifyConnectedFriend(client, user);
@@ -66,7 +69,7 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 		// Obtenemos la lista de peticiones de amistad de la base de datos
 		ArrayList<FriendRequest> friendRequests = db.getFriendRequest(user.getId());
 
-		User finalUser = new User(user.getId(), user.getName(), friendsClients, friendRequests);
+		User finalUser = new User(user.getId(), user.getName(), friendsClients, friendRequests, chats);
 
 		// Guardamos el nuevo usuario conectado
 		this.clients.put(user.hashCode(), client);
@@ -102,7 +105,7 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 
 		ClientInterface value = this.clients.get(user.hashCode());
 
-		if (value != null && client.equals(value)) {
+		if (client.equals(value)) {
 
 			this.clients.remove(user.hashCode());
 
@@ -186,6 +189,19 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 		}
 
 		return this.db.declineFriendRequest(requestId, name, friendName);
+
+	}
+
+	@Override
+	public boolean removeFriend(ClientInterface client, String friendName, String name, String password) throws RemoteException {
+
+		boolean valid = this.validateRequest(client, name, password);
+
+		if (!valid) {
+			return false;
+		}
+
+		return this.db.removeFriend(name, friendName);
 
 	}
 

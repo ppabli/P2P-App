@@ -5,7 +5,6 @@ import src.server.ServerInterface;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.rmi.Naming;
-import java.rmi.server.UnicastRemoteObject;
 
 public class Client {
 

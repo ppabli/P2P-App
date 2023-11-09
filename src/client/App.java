@@ -1,30 +1,39 @@
 package src.client;
 
+import src.model.Chat;
+import src.model.ListUser;
 import src.model.User;
 import src.observer.Observer;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.rmi.NoSuchObjectException;
-import java.rmi.server.UnicastRemoteObject;
 
 public class App implements Observer {
 
 	private JPanel mainPanel;
-	private JList<User> friendList;
+	private JList<ListUser> friendList;
 	private JButton frButton;
 	private JLabel tittleLabel;
 	private JButton addFriendButton;
 	private JLabel cfLabel;
+	private JTextField messageField;
+	private JButton sendButton;
+	private JPanel chatPanel;
+	private JLabel nameLabel;
+	private JTable chatTable;
+	private JButton removeFriendButton;
 	private final ClientImpl client;
+	private User activeChatUser;
 
 	public App(ClientImpl client) {
 
 		this.client = client;
 		this.client.addObserver(this);
+
+		this.chatPanel.setVisible(false);
 
 		JFrame frame = new JFrame("Main");
 		frame.setContentPane(this.mainPanel);
@@ -52,13 +61,41 @@ public class App implements Observer {
 
 		addFriendButton.addActionListener(e -> new FriendRequest(client));
 
-		frButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		frButton.addActionListener(e -> new FriendRequests(client));
 
-				new FriendRequests(client);
+		friendList.addListSelectionListener(e -> {
 
+			ListUser listUser = friendList.getSelectedValue();
+
+			if (listUser == null) {
+				return;
 			}
+
+			this.activeChatUser = listUser.getUser();
+
+			this.chatPanel.setVisible(true);
+			this.nameLabel.setText(listUser.getUser().getName());
+
+			updateChat();
+
+		});
+
+		sendButton.addActionListener(e -> {
+
+			this.client.sendMessage(activeChatUser, messageField.getText());
+			this.updateChat();
+
+		});
+
+		removeFriendButton.addActionListener(e -> {
+
+			PasswordConfirmation passwordConfirmation = new PasswordConfirmation(client);
+
+			if (!passwordConfirmation.getIsValid()) {
+				return;
+			}
+
+			client.requestRemoveFriend(activeChatUser, passwordConfirmation.getName(), passwordConfirmation.getPassword());
 
 		});
 
@@ -74,14 +111,94 @@ public class App implements Observer {
 
 		this.cfLabel.setText("Connected friends  " + client.getUser().getConnectedFriends().size());
 
-		DefaultListModel<User> listModel = new DefaultListModel<>();
+		boolean activeUserLogout = true;
+
+		DefaultListModel<ListUser> listModel = new DefaultListModel<>();
 		for (User user : client.getUser().getConnectedFriends().keySet()) {
 
-			listModel.addElement(user);
+			if (user.equals(activeChatUser)) {
+				activeUserLogout = false;
+			}
+
+			Chat chat = this.client.getUser().getChats().get(user);
+			int pendingMessages = 0;
+
+			if (chat != null) {
+				pendingMessages = chat.getPendingMessagesCount();
+			}
+
+			listModel.addElement(new ListUser(user, pendingMessages));
+
+		}
+
+		if (activeUserLogout) {
+
+			this.activeChatUser = null;
+			this.chatPanel.setVisible(false);
+			this.friendList.clearSelection();
 
 		}
 
 		this.friendList.setModel(listModel);
+
+	}
+
+	public void updateChat() {
+
+		Chat chat = this.client.getUser().getChats().get(this.activeChatUser);
+
+		if (chat == null) {
+			return;
+		}
+
+		chat.readMessages();
+		this.updateConnectedFriends();
+
+		DefaultTableModel model = new DefaultTableModel();
+
+		model.setColumnCount(2);
+
+		for (int i = 0; i < chat.getMessages().size(); i++) {
+
+			boolean value = chat.getOrder().get(i);
+			int col = value ? 1 : 0;
+
+			Object[] rowData;
+
+			if (col == 0) {
+
+				rowData = new Object[]{chat.getMessages().get(i), ""};
+
+			} else {
+
+				rowData = new Object[]{"", chat.getMessages().get(i)};
+
+			}
+
+			model.addRow(rowData);
+
+		}
+
+		DefaultTableCellRenderer renderer = new DefaultTableCellRenderer();
+		renderer.setHorizontalAlignment(SwingConstants.RIGHT);
+
+		this.chatTable.setModel(model);
+		this.chatTable.getColumnModel().getColumn(1).setCellRenderer(renderer);
+
+	}
+
+	@Override
+	public void updateChats(User user) {
+
+		if (user.equals(activeChatUser)) {
+
+			updateChat();
+
+		} else {
+
+			updateConnectedFriends();
+
+		}
 
 	}
 

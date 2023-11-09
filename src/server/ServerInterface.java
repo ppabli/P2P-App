@@ -22,4 +22,6 @@ public interface ServerInterface extends Remote {
 
 	boolean declineFriendRequest(ClientInterface client, int requestId, String friendName, String userName, String password) throws RemoteException;
 
+	boolean removeFriend(ClientInterface client, String friendName, String name, String password) throws RemoteException;
+
 }

@@ -12,6 +12,7 @@ public class User implements Serializable {
 	private final int id;
 	private final String name;
 	private final HashMap<User, ClientInterface> connectedFriends;
+	private final HashMap<User, Chat> chats;
 	private final ArrayList<FriendRequest> friendRequests;
 
 	public User(int id, String name) {
@@ -21,6 +22,7 @@ public class User implements Serializable {
 
 		this.connectedFriends = new HashMap<>();
 		this.friendRequests = new ArrayList<>();
+		this.chats = new HashMap<>();
 
 	}
 
@@ -31,6 +33,7 @@ public class User implements Serializable {
 
 		this.connectedFriends = connectedFriends;
 		this.friendRequests = new ArrayList<>();
+		this.chats = new HashMap<>();
 
 	}
 
@@ -41,6 +44,24 @@ public class User implements Serializable {
 
 		this.connectedFriends = connectedFriends;
 		this.friendRequests = friendRequests;
+		this.chats = new HashMap<>();
+
+	}
+
+	public User(int id, String name, HashMap<User, ClientInterface> connectedFriends, ArrayList<FriendRequest> friendRequests, HashMap<User, Chat> chats) {
+
+		this.id = id;
+		this.name = name;
+
+		this.connectedFriends = connectedFriends;
+		this.friendRequests = friendRequests;
+		this.chats = chats;
+
+	}
+
+	public HashMap<User, Chat> getChats() {
+
+		return chats;
 
 	}
 
@@ -76,6 +97,7 @@ public class User implements Serializable {
 			return true;
 
 		}
+
 		if (o == null || getClass() != o.getClass()) {
 
 			return false;
@@ -95,6 +117,13 @@ public class User implements Serializable {
 
 	}
 
+	@Override
+	public String toString() {
+
+		return this.id + " - " + this.name;
+
+	}
+
 	public void addFriendRequest(FriendRequest request) {
 
 		this.friendRequests.add(request);
@@ -104,6 +133,12 @@ public class User implements Serializable {
 	public void addConnectedFriend(User user, ClientInterface client) {
 
 		this.connectedFriends.put(user, client);
+
+		if (this.chats.get(user) == null) {
+
+			this.chats.put(user, new Chat());
+
+		}
 
 	}
 

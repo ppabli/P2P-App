@@ -350,4 +350,37 @@ public class DataBase {
 
 	}
 
+	public boolean removeFriend(String name, String friendName) {
+
+		try {
+
+			User me = this.getUser(name);
+			User friend = this.getUser(friendName);
+
+			ArrayList<User> friends = this.getFriends(me.getId());
+
+			if (!friends.contains(friend)) {
+				return true;
+			}
+
+			PreparedStatement statement = this.con.prepareStatement("delete from friends where (user_id = ? and friend_id = ?) or (user_id = ? and friend_id = ?)");
+
+			statement.setInt(1, me.getId());
+			statement.setInt(2, friend.getId());
+			statement.setInt(3, friend.getId());
+			statement.setInt(4, me.getId());
+
+			int res = statement.executeUpdate();
+
+			return res > 0;
+
+		} catch (Exception e) {
+
+			System.out.println("Database | Error: " + e.getMessage());
+			return false;
+
+		}
+
+	}
+
 }

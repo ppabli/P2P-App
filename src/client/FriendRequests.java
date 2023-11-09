@@ -1,6 +1,7 @@
 package src.client;
 
 import src.model.FriendRequest;
+import src.model.User;
 import src.observer.Observer;
 
 import javax.swing.*;
@@ -96,6 +97,11 @@ public class FriendRequests implements Observer {
 
 	@Override
 	public void updateConnectedFriends() {
+		// Nothing to do
+	}
+
+	@Override
+	public void updateChats(User user) {
 		// Nothing to do
 	}
 

@@ -1,12 +1,15 @@
 package src.client;
 
+import src.model.Chat;
 import src.model.FriendRequest;
 import src.model.User;
 import src.observer.Observer;
 import src.server.ServerInterface;
+
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
@@ -160,12 +163,69 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
 			System.out.println("Client | Error: " + e.getMessage());
 			return false;
+
+		}
+
+	}
+
+	public boolean requestRemoveFriend(User friend, String name, String password) {
+
+		try {
+
+			boolean res = this.serverObject.removeFriend(this, friend.getName(), name, password);
+
+			if (!res) {
+				return res;
+			}
+
+			this.getUser().removeConnectedFriend(friend);
+
+			for(Observer observer : this.observers) {
+
+				observer.updateConnectedFriends();
+
+			}
+
+			return res;
+
+		} catch (Exception e) {
+
+			System.out.println("Client | Error: " + e.getMessage());
+			return false;
+
 		}
 
 	}
 
 	@Override
-	public void notifyMessage() throws RemoteException {
+	public void notifyMessage(ClientInterface friendClient, User user, String message) throws RemoteException {
+
+		User friend = null;
+
+		for (Map.Entry<User, ClientInterface> entry : this.getUser().getConnectedFriends().entrySet()) {
+
+			if (entry.getValue().equals(friendClient)) {
+
+				friend = entry.getKey();
+				break;
+
+			}
+
+		}
+
+		if (friend == null || !friend.equals(user)) {
+			return;
+		}
+
+		Chat chat = this.getUser().getChats().get(friend);
+
+		chat.addMessage(message, false);
+
+		for(Observer observer : this.observers) {
+
+			observer.updateChats(friend);
+
+		}
 
 	}
 
@@ -203,6 +263,29 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 		for(Observer observer : this.observers) {
 
 			observer.updateConnectedFriends();
+
+		}
+
+	}
+
+	public void sendMessage(User user, String message) {
+
+		try {
+
+			ClientInterface friendClient = this.getUser().getConnectedFriends().get(user);
+
+			if (friendClient == null) {
+				return;
+			}
+
+			friendClient.notifyMessage(this, new User(this.getUser().getId(), this.getUser().getName()), message);
+			Chat chat = this.getUser().getChats().get(user);
+
+			chat.addMessage(message, true);
+
+		} catch (Exception e) {
+
+			System.out.println("Client | Error: " + e.getMessage());
 
 		}
 

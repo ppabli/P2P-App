@@ -50,7 +50,7 @@ public class FriendRequest implements Serializable {
 
 		FriendRequest that = (FriendRequest) o;
 
-		return name == that.name;
+		return name.equals(that.name);
 
 	}
 
