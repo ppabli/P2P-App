@@ -30,7 +30,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
 	}
 
-	public synchronized void addObserver(Observer observer) {
+	public void addObserver(Observer observer) {
 
 		this.observers.add(observer);
 
