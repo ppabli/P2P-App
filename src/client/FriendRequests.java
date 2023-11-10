@@ -109,6 +109,7 @@ public class FriendRequests implements Observer {
 		}
 
 		this.friendRequestList.setModel(listModel);
+		this.friendRequestList.clearSelection();
 
 	}
 
