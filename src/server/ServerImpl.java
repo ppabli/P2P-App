@@ -29,7 +29,7 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 	@Override
 	public synchronized User login(ClientInterface client, String name, String password) throws RemoteException {
 
-		// Obtenemos los datos basicos del usuario
+		// Obtenemos el usuario
 		User user = db.getUserWithPassword(name, password);
 
 		if (user == null) {

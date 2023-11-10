@@ -11,8 +11,8 @@ public class Chat implements Serializable {
 
 	public Chat() {
 
-		messages = new ArrayList<>();
-		order = new ArrayList<>();
+		this.messages = new ArrayList<>();
+		this.order = new ArrayList<>();
 
 	}
 
@@ -32,19 +32,19 @@ public class Chat implements Serializable {
 
 	public ArrayList<String> getMessages() {
 
-		return messages;
+		return this.messages;
 
 	}
 
 	public ArrayList<Boolean> getOrder() {
 
-		return order;
+		return this.order;
 
 	}
 
 	public int getPendingMessagesCount() {
 
-		return pendingMessagesCount;
+		return this.pendingMessagesCount;
 
 	}
 

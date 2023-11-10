@@ -6,6 +6,12 @@ import src.observer.Observer;
 
 import javax.swing.*;
 
+enum Action {
+
+	ACCEPT, DECLINE
+
+}
+
 public class FriendRequests implements Observer {
 
 	private JPanel mainPanel;
@@ -18,9 +24,9 @@ public class FriendRequests implements Observer {
 	public FriendRequests(ClientImpl client) {
 
 		this.client = client;
+		this.client.addObserver(this);
 
 		errorLabel.setOpaque(false);
-
 		acceptButton.setEnabled(false);
 		declineButton.setEnabled(false);
 
@@ -31,15 +37,26 @@ public class FriendRequests implements Observer {
 
 		this.updateFriendRequests();
 
+		acceptButton.addActionListener(e -> this.requestAction(Action.ACCEPT));
+
+		declineButton.addActionListener(e -> this.requestAction(Action.DECLINE));
+
+		friendRequestList.addListSelectionListener(e -> {
+
+			boolean validSelection = friendRequestList.getSelectedIndex() >= 0;
+
+			acceptButton.setEnabled(validSelection);
+			declineButton.setEnabled(validSelection);
+
+		});
+
 		frame.pack();
 		frame.setVisible(true);
-
-		acceptButton.addActionListener(e -> this.requestAction(0));
-		declineButton.addActionListener(e -> this.requestAction(1));
+		frame.toFront();
 
 	}
 
-	private void requestAction(int action) {
+	private void requestAction(Action action) {
 
 		FriendRequest request = this.friendRequestList.getSelectedValue();
 
@@ -55,7 +72,7 @@ public class FriendRequests implements Observer {
 
 		boolean res;
 
-		if (action == 0) {
+		if (action == Action.ACCEPT) {
 
 			res = client.requestAcceptFriendRequest(request.getId(), request.getName(), passwordConfirmation.getName(), passwordConfirmation.getPassword());
 

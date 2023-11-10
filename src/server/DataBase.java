@@ -53,23 +53,9 @@ public class DataBase {
 				return null;
 			}
 
-			boolean alreadyOneRequest = false;
-
 			ArrayList<FriendRequest> requests = this.getFriendRequest(user2.getId());
 
-			for (FriendRequest request : requests) {
-
-				if (request.getName().equals(user1.getName())) {
-
-					alreadyOneRequest = true;
-
-					break;
-
-				}
-
-			}
-
-			if (alreadyOneRequest) {
+			if (requests.contains(new FriendRequest(-1, user1.getName()))) {
 				return null;
 			}
 

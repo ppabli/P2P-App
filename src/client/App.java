@@ -34,30 +34,26 @@ public class App implements Observer {
 		this.client.addObserver(this);
 
 		this.chatPanel.setVisible(false);
+		this.tittleLabel.setText("Welcome " + client.getUser().getName());
 
-		JFrame frame = new JFrame("Main");
+		JFrame frame = new JFrame("CoDis - Mega ultra pack - Exam edition");
 		frame.setContentPane(this.mainPanel);
 
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
 		frame.addWindowListener(new WindowAdapter() {
 
 			@Override
 			public void windowClosing(WindowEvent e) {
 
 				client.requestLogout();
+				client.end();
+
 				frame.dispose();
 
 			}
 
 		});
-
-		this.tittleLabel.setText("Welcome " + client.getUser().getName());
-
-		this.updateConnectedFriends();
-		this.updateFriendRequests();
-
-		frame.pack();
-		frame.setVisible(true);
 
 		addFriendButton.addActionListener(e -> new FriendRequest(client));
 
@@ -82,7 +78,13 @@ public class App implements Observer {
 
 		sendButton.addActionListener(e -> {
 
-			this.client.sendMessage(activeChatUser, messageField.getText());
+			String message = messageField.getText();
+
+			if (message.isBlank()) {
+				return;
+			}
+
+			this.client.sendMessage(activeChatUser, message);
 			this.updateChat();
 
 		});
@@ -95,9 +97,23 @@ public class App implements Observer {
 				return;
 			}
 
-			client.requestRemoveFriend(activeChatUser, passwordConfirmation.getName(), passwordConfirmation.getPassword());
+			boolean res = client.requestRemoveFriend(activeChatUser, passwordConfirmation.getName(), passwordConfirmation.getPassword());
+
+			if (!res) {
+				return;
+			}
+
+			this.activeChatUser = null;
+			this.chatPanel.setVisible(false);
+			this.friendList.clearSelection();
 
 		});
+
+		this.updateConnectedFriends();
+		this.updateFriendRequests();
+
+		frame.pack();
+		frame.setVisible(true);
 
 	}
 
@@ -114,6 +130,7 @@ public class App implements Observer {
 		boolean activeUserLogout = true;
 
 		DefaultListModel<ListUser> listModel = new DefaultListModel<>();
+
 		for (User user : client.getUser().getConnectedFriends().keySet()) {
 
 			if (user.equals(activeChatUser)) {
@@ -121,13 +138,8 @@ public class App implements Observer {
 			}
 
 			Chat chat = this.client.getUser().getChats().get(user);
-			int pendingMessages = 0;
 
-			if (chat != null) {
-				pendingMessages = chat.getPendingMessagesCount();
-			}
-
-			listModel.addElement(new ListUser(user, pendingMessages));
+			listModel.addElement(new ListUser(user, chat.getPendingMessagesCount()));
 
 		}
 
@@ -147,12 +159,8 @@ public class App implements Observer {
 
 		Chat chat = this.client.getUser().getChats().get(this.activeChatUser);
 
-		if (chat == null) {
-			return;
-		}
-
 		chat.readMessages();
-		this.updateConnectedFriends();
+		updateConnectedFriends();
 
 		DefaultTableModel model = new DefaultTableModel();
 
@@ -160,18 +168,17 @@ public class App implements Observer {
 
 		for (int i = 0; i < chat.getMessages().size(); i++) {
 
-			boolean value = chat.getOrder().get(i);
-			int col = value ? 1 : 0;
+			boolean myMessage = chat.getOrder().get(i);
 
 			Object[] rowData;
 
-			if (col == 0) {
+			if (myMessage) {
 
-				rowData = new Object[]{chat.getMessages().get(i), ""};
+				rowData = new Object[]{"", chat.getMessages().get(i)};
 
 			} else {
 
-				rowData = new Object[]{"", chat.getMessages().get(i)};
+				rowData = new Object[]{chat.getMessages().get(i), ""};
 
 			}
 

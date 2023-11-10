@@ -61,31 +61,31 @@ public class User implements Serializable {
 
 	public HashMap<User, Chat> getChats() {
 
-		return chats;
+		return this.chats;
 
 	}
 
 	public int getId() {
 
-		return id;
+		return this.id;
 
 	}
 
 	public String getName() {
 
-		return name;
+		return this.name;
 
 	}
 
 	public HashMap<User, ClientInterface>  getConnectedFriends() {
 
-		return connectedFriends;
+		return this.connectedFriends;
 
 	}
 
 	public ArrayList<FriendRequest> getFriendRequests() {
 
-		return friendRequests;
+		return this.friendRequests;
 
 	}
 
@@ -106,21 +106,21 @@ public class User implements Serializable {
 
 		User user = (User) o;
 
-		return id == user.id;
+		return this.id == user.id;
 
 	}
 
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(id);
+		return Objects.hash(this.id);
 
 	}
 
 	@Override
 	public String toString() {
 
-		return this.id + " - " + this.name;
+		return this.name;
 
 	}
 
@@ -142,31 +142,27 @@ public class User implements Serializable {
 
 	}
 
-	public void removeConnectedFriend(User user) {
+	public void removeConnectedFriend(User user, boolean removeChat) {
 
 		this.connectedFriends.remove(user);
 
+		if (removeChat) {
+
+			this.chats.remove(user);
+
+		}
+
 	}
 
-	public void removeFriendRequest(int requestId) {
+	public void removeFriendRequest(String userName) {
 
-		FriendRequest friendRequest = null;
+		int index = this.friendRequests.indexOf(new FriendRequest(-1, userName));
 
-		for (FriendRequest request : this.friendRequests) {
-
-			if (request.getId() == requestId) {
-
-				friendRequest = request;
-
-			}
-
+		if (index < 0) {
+			return;
 		}
 
-		if (friendRequest != null) {
-
-			this.friendRequests.remove(friendRequest);
-
-		}
+		this.friendRequests.remove(index);
 
 	}
 

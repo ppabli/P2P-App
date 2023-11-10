@@ -42,13 +42,19 @@ public class FriendRequest extends JDialog {
 
 	private void onOK() {
 
+		String name = this.nameField.getText();
+
+		if (name.isBlank()) {
+			return;
+		}
+
 		PasswordConfirmation passwordConfirmation = new PasswordConfirmation(client);
 
 		if (!passwordConfirmation.getIsValid()) {
 			return;
 		}
 
-		boolean res = this.client.requestFriend(this.nameField.getText(), passwordConfirmation.getName(), passwordConfirmation.getPassword());
+		boolean res = this.client.requestFriend(name, passwordConfirmation.getName(), passwordConfirmation.getPassword());
 
 		this.errorLabel.setOpaque(true);
 

@@ -17,21 +17,22 @@ public class FriendRequest implements Serializable {
 
 	public int getId() {
 
-		return id;
+		return this.id;
 
 	}
 
 	public String getName() {
 
-		return name;
+		return this.name;
 
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.id);
-	}
 
+		return Objects.hash(this.id);
+
+	}
 
 	@Override
 	public boolean equals(Object o) {
@@ -50,7 +51,14 @@ public class FriendRequest implements Serializable {
 
 		FriendRequest that = (FriendRequest) o;
 
-		return name.equals(that.name);
+		return this.name.equals(that.name);
+
+	}
+
+	@Override
+	public String toString() {
+
+		return "Friend request from: " + this.name;
 
 	}
 

@@ -1,6 +1,8 @@
 package src.model;
 
-public class ListUser {
+import java.io.Serializable;
+
+public class ListUser implements Serializable {
 
 	User user;
 	int pendingChatMessages;
@@ -15,13 +17,13 @@ public class ListUser {
 	@Override
 	public String toString() {
 
-		return user.toString() + " - " + pendingChatMessages;
+		return this.user.toString() + " - " + this.pendingChatMessages;
 
 	}
 
 	public User getUser() {
 
-		return user;
+		return this.user;
 
 	}
 

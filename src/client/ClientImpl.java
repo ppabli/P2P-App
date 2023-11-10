@@ -6,6 +6,7 @@ import src.model.User;
 import src.observer.Observer;
 import src.server.ServerInterface;
 
+import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
 	}
 
-	public void addObserver(Observer observer) {
+	public synchronized void addObserver(Observer observer) {
 
 		this.observers.add(observer);
 
@@ -111,7 +112,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
 	}
 
-	public boolean requestAcceptFriendRequest(int requestId, String friendName, String name, String password) {
+	public synchronized boolean requestAcceptFriendRequest(int requestId, String friendName, String name, String password) {
 
 		try {
 
@@ -121,7 +122,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 				return false;
 			}
 
-			this.user.removeFriendRequest(requestId);
+			this.user.removeFriendRequest(friendName);
 
 			for(Observer observer : this.observers) {
 
@@ -139,7 +140,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
 	}
 
-	public boolean requestDeclineFriendRequest(int requestId, String friendName, String name, String password) {
+	public synchronized boolean requestDeclineFriendRequest(int requestId, String friendName, String name, String password) {
 
 		try {
 
@@ -149,7 +150,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 				return false;
 			}
 
-			this.user.removeFriendRequest(requestId);
+			this.user.removeFriendRequest(friendName);
 
 			for(Observer observer : this.observers) {
 
@@ -168,17 +169,17 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
 	}
 
-	public boolean requestRemoveFriend(User friend, String name, String password) {
+	public synchronized boolean requestRemoveFriend(User friend, String name, String password) {
 
 		try {
 
 			boolean res = this.serverObject.removeFriend(this, friend.getName(), name, password);
 
 			if (!res) {
-				return res;
+				return false;
 			}
 
-			this.getUser().removeConnectedFriend(friend);
+			this.user.removeConnectedFriend(friend, true);
 
 			for(Observer observer : this.observers) {
 
@@ -186,7 +187,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
 			}
 
-			return res;
+			return true;
 
 		} catch (Exception e) {
 
@@ -198,11 +199,11 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 	}
 
 	@Override
-	public void notifyMessage(ClientInterface friendClient, User user, String message) throws RemoteException {
+	public synchronized void notifyMessage(ClientInterface friendClient, User user, String message) throws RemoteException {
 
 		User friend = null;
 
-		for (Map.Entry<User, ClientInterface> entry : this.getUser().getConnectedFriends().entrySet()) {
+		for (Map.Entry<User, ClientInterface> entry : this.user.getConnectedFriends().entrySet()) {
 
 			if (entry.getValue().equals(friendClient)) {
 
@@ -217,7 +218,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 			return;
 		}
 
-		Chat chat = this.getUser().getChats().get(friend);
+		Chat chat = this.user.getChats().get(friend);
 
 		chat.addMessage(message, false);
 
@@ -230,7 +231,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 	}
 
 	@Override
-	public void notifyFriendRequest(FriendRequest request) throws RemoteException {
+	public synchronized void notifyFriendRequest(FriendRequest request) throws RemoteException {
 
 		this.user.addFriendRequest(request);
 
@@ -243,7 +244,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 	}
 
 	@Override
-	public void notifyConnectedFriend(ClientInterface client, User user) throws RemoteException {
+	public synchronized void notifyConnectedFriend(ClientInterface client, User user) throws RemoteException {
 
 		this.user.addConnectedFriend(user, client);
 
@@ -256,9 +257,9 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 	}
 
 	@Override
-	public void notifyDisconnectedFriend(User user) throws RemoteException {
+	public synchronized void notifyDisconnectedFriend(User user) throws RemoteException {
 
-		this.user.removeConnectedFriend(user);
+		this.user.removeConnectedFriend(user, false);
 
 		for(Observer observer : this.observers) {
 
@@ -272,14 +273,14 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
 		try {
 
-			ClientInterface friendClient = this.getUser().getConnectedFriends().get(user);
+			ClientInterface friendClient = this.user.getConnectedFriends().get(user);
 
 			if (friendClient == null) {
 				return;
 			}
 
-			friendClient.notifyMessage(this, new User(this.getUser().getId(), this.getUser().getName()), message);
-			Chat chat = this.getUser().getChats().get(user);
+			friendClient.notifyMessage(this, new User(this.user.getId(), this.user.getName()), message);
+			Chat chat = this.user.getChats().get(user);
 
 			chat.addMessage(message, true);
 
@@ -294,6 +295,20 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 	public User getUser() {
 
 		return this.user;
+
+	}
+
+	public void end() {
+
+		try {
+
+			UnicastRemoteObject.unexportObject(this, true);
+
+		} catch (NoSuchObjectException e) {
+
+			System.out.println("Client | Error: " + e.getMessage());
+
+		}
 
 	}
 

@@ -3,8 +3,6 @@ package src.client;
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.rmi.NoSuchObjectException;
-import java.rmi.server.UnicastRemoteObject;
 
 public class Login extends JDialog {
 	private JPanel contentPane;
@@ -35,6 +33,8 @@ public class Login extends JDialog {
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 
+				client.end();
+
 				onCancel();
 
 			}
@@ -42,8 +42,6 @@ public class Login extends JDialog {
 		});
 
 		registerButton.addActionListener(e -> {
-
-			System.out.println("pass");
 
 			boolean res = client.requestRegister(nameText.getText(), new String(this.passwordField.getPassword()));
 
@@ -72,6 +70,10 @@ public class Login extends JDialog {
 		String userName = this.nameText.getText();
 		String password = new String(this.passwordField.getPassword());
 
+		if (userName.isBlank() || password.isBlank()) {
+			return;
+		}
+
 		boolean res = this.client.requestLogin(userName, password);
 
 		if (res) {
@@ -82,7 +84,7 @@ public class Login extends JDialog {
 		} else {
 
 			this.errorLabel.setOpaque(true);
-			this.errorLabel.setText("User/password not valid");
+			this.errorLabel.setText("User or password not valid");
 
 		}
 
