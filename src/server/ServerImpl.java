@@ -83,7 +83,7 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 	// Comprueba que el cliente que hace la peticion es el correcto
 	@Override
 	public boolean validateRequest(ClientInterface client, String name, String password) throws RemoteException {
-		
+
 		User user = this.db.getUserWithPassword(name, password);
 
 		if (user == null) {
@@ -99,6 +99,10 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 	// Registra un usuario en la base de datos
 	@Override
 	public boolean register(String name, String password) throws RemoteException {
+
+		if (name.isBlank() || password.isBlank()) {
+			return false;
+		}
 
 		return this.db.registerUser(name, password);
 
@@ -126,7 +130,7 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 
 	}
 
-	// 
+	//
 	@Override
 	public boolean requestFriend(ClientInterface client, String friendName, String name, String password) throws RemoteException {
 		// Comprobamos que el cliente que hace la peticion es el correcto
@@ -135,7 +139,7 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 		if (!valid) {
 			return false;
 		}
-		
+
 		// Registramos la peticion de amistad en la base de datos
 		FriendRequest request = this.db.registerFriendRequest(name, friendName);
 
@@ -162,6 +166,7 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 
 	@Override
 	public boolean acceptFriendRequest(ClientInterface client, int requestId, String friendName, String name, String password) throws RemoteException {
+
 		// Comprobamos que el cliente que hace la peticion es el correcto
 		boolean valid = this.validateRequest(client, name, password);
 		if (!valid) {

@@ -1,11 +1,12 @@
 package src.client;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 public class Login extends JDialog {
-	private JPanel contentPane;
+	private JPanel mainPanel;
 	private JButton buttonOK;
 	private JButton buttonCancel;
 	private JPasswordField passwordField;
@@ -20,7 +21,7 @@ public class Login extends JDialog {
 
 		this.errorLabel.setOpaque(false);
 
-		setContentPane(contentPane);
+		setContentPane(mainPanel);
 		setModal(true);
 		getRootPane().setDefaultButton(buttonOK);
 
