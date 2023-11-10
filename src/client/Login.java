@@ -27,7 +27,13 @@ public class Login extends JDialog {
 
 		buttonOK.addActionListener(e -> onOK());
 
-		buttonCancel.addActionListener(e -> onCancel());
+		buttonCancel.addActionListener(e -> {
+
+			this.client.end();
+
+			onCancel();
+
+		});
 
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
