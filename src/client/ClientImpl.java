@@ -112,7 +112,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
 	}
 
-	public synchronized boolean requestAcceptFriendRequest(int requestId, String friendName, String name, String password) {
+	public boolean requestAcceptFriendRequest(int requestId, String friendName, String name, String password) {
 
 		try {
 
@@ -140,7 +140,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
 	}
 
-	public synchronized boolean requestDeclineFriendRequest(int requestId, String friendName, String name, String password) {
+	public boolean requestDeclineFriendRequest(int requestId, String friendName, String name, String password) {
 
 		try {
 
@@ -169,7 +169,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
 	}
 
-	public synchronized boolean requestRemoveFriend(User friend, String name, String password) {
+	public boolean requestRemoveFriend(User friend, String name, String password) {
 
 		try {
 
@@ -199,7 +199,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 	}
 
 	@Override
-	public synchronized void notifyMessage(ClientInterface friendClient, User user, String message) throws RemoteException {
+	public void notifyMessage(ClientInterface friendClient, User user, String message) throws RemoteException {
 
 		User friend = null;
 
@@ -231,7 +231,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 	}
 
 	@Override
-	public synchronized void notifyFriendRequest(FriendRequest request) throws RemoteException {
+	public void notifyFriendRequest(FriendRequest request) throws RemoteException {
 
 		this.user.addFriendRequest(request);
 
@@ -244,7 +244,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 	}
 
 	@Override
-	public synchronized void notifyConnectedFriend(ClientInterface client, User user) throws RemoteException {
+	public void notifyConnectedFriend(ClientInterface client, User user) throws RemoteException {
 
 		this.user.addConnectedFriend(user, client);
 
@@ -257,7 +257,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 	}
 
 	@Override
-	public synchronized void notifyDisconnectedFriend(User user) throws RemoteException {
+	public void notifyDisconnectedFriend(User user) throws RemoteException {
 
 		this.user.removeConnectedFriend(user, false);
 
