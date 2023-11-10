@@ -12,6 +12,10 @@ public class Chat implements Serializable {
 	public Chat() {
 
 		this.messages = new ArrayList<>();
+
+		// Variable que mide si el mensaje es tuyo o de tu amigo
+		// true: es tuyo
+		// false: es de tu amigo
 		this.order = new ArrayList<>();
 
 	}

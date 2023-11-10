@@ -12,7 +12,7 @@ public class DataBase {
 
 	public DataBase() throws SQLException {
 
-		this.con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/Practica5", "postgres", "postgres");
+		this.con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "postgres");
 
 	}
 
