@@ -1,6 +1,6 @@
-package src.observer;
+package observer;
 
-import src.model.User;
+import model.User;
 
 public interface Observer {
 

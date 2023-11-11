@@ -1,6 +1,6 @@
-package src.model;
+package model;
 
-import src.client.ClientInterface;
+import client.ClientInterface;
 
 import java.io.Serializable;
 import java.util.ArrayList;

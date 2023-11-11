@@ -1,9 +1,9 @@
-package src.server;
+package server;
 
-import src.client.ClientInterface;
-import src.model.Chat;
-import src.model.FriendRequest;
-import src.model.User;
+import client.ClientInterface;
+import model.Chat;
+import model.FriendRequest;
+import model.User;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -83,15 +83,17 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 	// Comprueba que el cliente que hace la peticion es el correcto
 	@Override
 	public boolean validateRequest(ClientInterface client, String name, String password) throws RemoteException {
-
+                System.out.println("ValidateRequest");
+                System.out.println("name1: " + name);
+                System.out.println("password1: "+ password);
 		User user = this.db.getUserWithPassword(name, password);
 
 		if (user == null) {
-
+                        System.out.println("ValidateRequest: User = null");
 			return false;
 
 		}
-
+                System.out.println("ValidateRequest: haschode.equals(): " + client.equals(this.clients.get(user.hashCode())));
 		return client.equals(this.clients.get(user.hashCode()));
 
 	}
@@ -99,10 +101,6 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 	// Registra un usuario en la base de datos
 	@Override
 	public boolean register(String name, String password) throws RemoteException {
-
-		if (name.isBlank() || password.isBlank()) {
-			return false;
-		}
 
 		return this.db.registerUser(name, password);
 
@@ -130,7 +128,7 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 
 	}
 
-	//
+	// 
 	@Override
 	public boolean requestFriend(ClientInterface client, String friendName, String name, String password) throws RemoteException {
 		// Comprobamos que el cliente que hace la peticion es el correcto
@@ -139,7 +137,7 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 		if (!valid) {
 			return false;
 		}
-
+		
 		// Registramos la peticion de amistad en la base de datos
 		FriendRequest request = this.db.registerFriendRequest(name, friendName);
 
@@ -166,7 +164,6 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 
 	@Override
 	public boolean acceptFriendRequest(ClientInterface client, int requestId, String friendName, String name, String password) throws RemoteException {
-
 		// Comprobamos que el cliente que hace la peticion es el correcto
 		boolean valid = this.validateRequest(client, name, password);
 		if (!valid) {

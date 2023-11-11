@@ -1,7 +1,7 @@
-package src.server;
+package server;
 
-import src.client.ClientInterface;
-import src.model.User;
+import client.ClientInterface;
+import model.User;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;

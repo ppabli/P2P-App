@@ -1,10 +1,10 @@
-package src.client;
+package client;
 
-import src.model.Chat;
-import src.model.FriendRequest;
-import src.model.User;
-import src.observer.Observer;
-import src.server.ServerInterface;
+import model.Chat;
+import model.FriendRequest;
+import model.User;
+import observer.Observer;
+import server.ServerInterface;
 
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
@@ -71,7 +71,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 	public boolean requestValidation(String name, String password) {
 
 		try {
-
+                        System.out.println("requestValidation: " + this.serverObject.validateRequest(this, name, password));
 			return this.serverObject.validateRequest(this, name, password);
 
 		} catch (Exception e) {

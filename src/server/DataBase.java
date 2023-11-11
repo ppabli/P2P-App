@@ -1,7 +1,7 @@
-package src.server;
+package server;
 
-import src.model.FriendRequest;
-import src.model.User;
+import model.FriendRequest;
+import model.User;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ public class DataBase {
 
 	public DataBase() throws SQLException {
 
-		this.con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "postgres");
+		this.con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "david");
 
 	}
 
@@ -228,17 +228,17 @@ public class DataBase {
 			PreparedStatement statement = con.prepareStatement("select * from users where name = ? and password = ?");
 			statement.setString(1, name);
 			statement.setString(2, password);
+                        System.out.println("StatementFinal: " + statement);
 
 			// Ejecutamos la consulta
 			ResultSet rs = statement.executeQuery();
 
 			// Si existe alguno
 			if (rs.next()) {
-
+                                System.out.println("TRUE");
 				return new User(rs.getInt("id"), rs.getString("name"));
 
 			} else {
-
 				return null;
 
 			}

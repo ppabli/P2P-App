@@ -1,212 +1,392 @@
-package src.client;
-
-import src.model.Chat;
-import src.model.ListUser;
-import src.model.User;
-import src.observer.Observer;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ */
+package client;
+import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-
-public class App implements Observer {
-
-	private JPanel mainPanel;
-	private JList<ListUser> friendList;
-	private JButton frButton;
-	private JLabel tittleLabel;
-	private JButton addFriendButton;
-	private JLabel cfLabel;
-	private JTextField messageField;
-	private JButton sendButton;
-	private JPanel chatPanel;
-	private JLabel nameLabel;
-	private JTable chatTable;
-	private JButton removeFriendButton;
-	private final ClientImpl client;
-	private User activeChatUser;
-
-	public App(ClientImpl client) {
-
-		this.client = client;
-		this.client.addObserver(this);
-
-		this.chatPanel.setVisible(false);
-		this.tittleLabel.setText("Welcome " + client.getUser().getName());
-
-		JFrame frame = new JFrame("CoDis - Mega ultra pack - Exam edition");
-		frame.setContentPane(this.mainPanel);
-
-		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-
-		frame.addWindowListener(new WindowAdapter() {
-
-			@Override
-			public void windowClosing(WindowEvent e) {
-
-				client.requestLogout();
-				client.end();
-
-				frame.dispose();
-
-			}
-
-		});
-
-		addFriendButton.addActionListener(e -> new FriendRequest(client));
-
-		frButton.addActionListener(e -> new FriendRequests(client));
-
-		friendList.addListSelectionListener(e -> {
-
-			ListUser listUser = friendList.getSelectedValue();
-
-			if (listUser == null) {
-				return;
-			}
-
-			this.activeChatUser = listUser.getUser();
-
-			this.chatPanel.setVisible(true);
-			this.nameLabel.setText(listUser.getUser().getName());
-
-			updateChat();
-
-		});
-
-		sendButton.addActionListener(e -> {
-
-			String message = messageField.getText();
-
-			if (message.isBlank()) {
-				return;
-			}
-
-			this.client.sendMessage(activeChatUser, message);
-			this.updateChat();
-
-		});
-
-		removeFriendButton.addActionListener(e -> {
-
-			PasswordConfirmation passwordConfirmation = new PasswordConfirmation(client);
-
-			if (!passwordConfirmation.getIsValid()) {
-				return;
-			}
-
-			boolean res = client.requestRemoveFriend(activeChatUser, passwordConfirmation.getName(), passwordConfirmation.getPassword());
-
-			if (!res) {
-				return;
-			}
-
-			this.activeChatUser = null;
-			this.chatPanel.setVisible(false);
-			this.friendList.clearSelection();
-
-		});
-
-		this.updateConnectedFriends();
-		this.updateFriendRequests();
-
-		frame.pack();
-		frame.setVisible(true);
-
-	}
-
-	public void updateFriendRequests() {
-
-		this.frButton.setText("Friend requests - " + client.getUser().getFriendRequests().size());
-
-	}
-
-	public void updateConnectedFriends() {
-
-		this.cfLabel.setText("Connected friends  " + client.getUser().getConnectedFriends().size());
-
-		boolean activeUserLogout = true;
-
-		DefaultListModel<ListUser> listModel = new DefaultListModel<>();
-
-		for (User user : client.getUser().getConnectedFriends().keySet()) {
-
-			if (user.equals(activeChatUser)) {
-				activeUserLogout = false;
-			}
-
-			Chat chat = this.client.getUser().getChats().get(user);
-
-			listModel.addElement(new ListUser(user, chat.getPendingMessagesCount()));
-
-		}
-
-		if (activeUserLogout) {
-
-			this.activeChatUser = null;
-			this.chatPanel.setVisible(false);
-			this.friendList.clearSelection();
-
-		}
-
-		this.friendList.setModel(listModel);
-
-	}
-
-	public void updateChat() {
-
-		Chat chat = this.client.getUser().getChats().get(this.activeChatUser);
-
-		chat.readMessages();
-		updateConnectedFriends();
-
-		DefaultTableModel model = new DefaultTableModel();
-
-		model.setColumnCount(2);
-
-		for (int i = 0; i < chat.getMessages().size(); i++) {
-
-			boolean myMessage = chat.getOrder().get(i);
-
-			Object[] rowData;
-
-			if (myMessage) {
-
-				rowData = new Object[]{"", chat.getMessages().get(i)};
-
-			} else {
-
-				rowData = new Object[]{chat.getMessages().get(i), ""};
-
-			}
-
-			model.addRow(rowData);
-
-		}
-
-		DefaultTableCellRenderer renderer = new DefaultTableCellRenderer();
-		renderer.setHorizontalAlignment(SwingConstants.RIGHT);
-
-		this.chatTable.setModel(model);
-		this.chatTable.getColumnModel().getColumn(1).setCellRenderer(renderer);
-
-	}
-
-	@Override
-	public void updateChats(User user) {
-
-		if (user.equals(activeChatUser)) {
-
-			updateChat();
-
-		} else {
-
-			updateConnectedFriends();
-
-		}
-
-	}
-
+import javax.swing.DefaultListModel;
+import javax.swing.JFrame;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import model.Chat;
+import model.ListUser;
+import model.User;
+import observer.Observer;
+
+/**
+ *
+ * @author David
+ */
+public class App extends javax.swing.JFrame implements Observer{
+    private final ClientImpl client;
+    private User activeChatUser;
+    private boolean isValid;
+    public App(ClientImpl client) {
+        initComponents();
+        this.client = client;
+        this.client.addObserver(this);
+        this.tittleLabel.setForeground(new java.awt.Color(255, 255, 255));
+        this.tittleLabel.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        this.tittleLabel.setText("Welcome " + client.getUser().getName());
+        
+        
+        // Si se cierra deslogueamos al cliente
+        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(new WindowAdapter(){
+            @Override
+            public void windowClosing(WindowEvent e){
+                client.requestLogout();
+                client.end();
+                dispose();
+            }
+        });
+        
+        friendList.addListSelectionListener(e -> {
+
+            ListUser listUser = friendList.getSelectedValue();
+
+            if (listUser == null) {
+                    return;
+            }
+
+            this.activeChatUser = listUser.getUser();
+            this.nameLabel.setForeground(new java.awt.Color(255, 255, 255));
+            this.nameLabel.setFont(new java.awt.Font("Segoe UI", 1, 12));
+            this.nameLabel.setText(listUser.getUser().getName());
+
+            updateChat();
+
+        });
+                
+        
+        
+        
+        
+        this.updateConnectedFriends();
+        this.updateFriendRequests();
+        this.pack();
+        this.setVisible(true);
+        this.toFront();
+    }
+    
+    public void updateFriendRequests() {
+        this.numerOfFriendsRequests.setForeground(new java.awt.Color(255, 255, 255));
+        this.numerOfFriendsRequests.setFont(new java.awt.Font("Segoe UI", 1, 18));
+        this.numerOfFriendsRequests.setText(""+client.getUser().getFriendRequests().size());
+        
+        
+
+    }
+
+    public void updateConnectedFriends() {
+        this.cfLabel.setForeground(new java.awt.Color(255, 255, 255));
+        this.cfLabel.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        this.cfLabel.setText("Connected friends  " + client.getUser().getConnectedFriends().size());
+
+        boolean activeUserLogout = true;
+
+        DefaultListModel<ListUser> listModel = new DefaultListModel<>();
+
+        for (User user : client.getUser().getConnectedFriends().keySet()) {
+
+                if (user.equals(activeChatUser)) {
+                        activeUserLogout = false;
+                }
+
+                Chat chat = this.client.getUser().getChats().get(user);
+
+                listModel.addElement(new ListUser(user, chat.getPendingMessagesCount()));
+
+        }
+
+        if (activeUserLogout) {
+
+                this.activeChatUser = null;
+                this.friendList.clearSelection();
+
+        }
+
+        this.friendList.setModel(listModel);
+
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        errorLabel = new javax.swing.JLabel();
+        sendButton = new javax.swing.JButton();
+        addFriendButton1 = new javax.swing.JButton();
+        removeFriendButton = new javax.swing.JButton();
+        tittleLabel = new javax.swing.JLabel();
+        messageField = new javax.swing.JTextField();
+        cfLabel = new javax.swing.JLabel();
+        nameLabel = new javax.swing.JLabel();
+        numerOfFriendsRequests = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        friendList = new javax.swing.JList<>();
+        jTable = new javax.swing.JScrollPane();
+        chatTable = new javax.swing.JTable();
+        frButton = new javax.swing.JButton();
+        Fondo = new javax.swing.JLabel();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        getContentPane().add(errorLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 540, -1, -1));
+
+        sendButton.setBorder(null);
+        sendButton.setBorderPainted(false);
+        sendButton.setContentAreaFilled(false);
+        sendButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendButtonActionPerformed(evt);
+            }
+        });
+        getContentPane().add(sendButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(1070, 570, 60, 50));
+
+        addFriendButton1.setBorder(null);
+        addFriendButton1.setBorderPainted(false);
+        addFriendButton1.setContentAreaFilled(false);
+        addFriendButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addFriendButton1ActionPerformed(evt);
+            }
+        });
+        getContentPane().add(addFriendButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 610, 240, 30));
+
+        removeFriendButton.setBorder(null);
+        removeFriendButton.setBorderPainted(false);
+        removeFriendButton.setContentAreaFilled(false);
+        removeFriendButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeFriendButtonActionPerformed(evt);
+            }
+        });
+        getContentPane().add(removeFriendButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(1010, 110, 120, 30));
+
+        tittleLabel.setBackground(new java.awt.Color(255, 255, 255));
+        tittleLabel.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        getContentPane().add(tittleLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 80, 90, 20));
+
+        messageField.setBackground(new java.awt.Color(45, 102, 212));
+        messageField.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        messageField.setForeground(new java.awt.Color(255, 255, 255));
+        messageField.setText("Mensaje");
+        messageField.setBorder(null);
+        messageField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                messageFieldActionPerformed(evt);
+            }
+        });
+        getContentPane().add(messageField, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 585, 600, 20));
+
+        cfLabel.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        getContentPane().add(cfLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 120, 140, 20));
+
+        nameLabel.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        getContentPane().add(nameLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 120, 430, 20));
+
+        numerOfFriendsRequests.setBackground(new java.awt.Color(0, 0, 0));
+        numerOfFriendsRequests.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        numerOfFriendsRequests.setForeground(new java.awt.Color(255, 255, 255));
+        numerOfFriendsRequests.setToolTipText("");
+        getContentPane().add(numerOfFriendsRequests, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 570, 30, 20));
+
+        friendList.setBackground(new java.awt.Color(220, 232, 255));
+        friendList.setBorder(null);
+        jScrollPane2.setViewportView(friendList);
+
+        getContentPane().add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 160, 250, 370));
+
+        jTable.setForeground(new java.awt.Color(220, 232, 255));
+
+        chatTable.setBackground(new java.awt.Color(220, 232, 255));
+        chatTable.setForeground(new java.awt.Color(0, 0, 0));
+        chatTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null}
+            },
+            new String [] {
+                "", ""
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        chatTable.setFocusable(false);
+        chatTable.setGridColor(new java.awt.Color(220, 232, 255));
+        chatTable.setRequestFocusEnabled(false);
+        chatTable.setRowSelectionAllowed(false);
+        chatTable.setSelectionBackground(new java.awt.Color(220, 232, 255));
+        chatTable.setSelectionForeground(new java.awt.Color(220, 232, 255));
+        chatTable.setShowGrid(false);
+        chatTable.getTableHeader().setResizingAllowed(false);
+        chatTable.getTableHeader().setReorderingAllowed(false);
+        chatTable.setUpdateSelectionOnSort(false);
+        chatTable.setVerifyInputWhenFocusTarget(false);
+        jTable.setViewportView(chatTable);
+
+        getContentPane().add(jTable, new org.netbeans.lib.awtextra.AbsoluteConstraints(430, 160, 690, 360));
+
+        frButton.setBorder(null);
+        frButton.setBorderPainted(false);
+        frButton.setContentAreaFilled(false);
+        frButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                frButtonActionPerformed(evt);
+            }
+        });
+        getContentPane().add(frButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 570, 250, 20));
+
+        Fondo.setFont(new java.awt.Font("Segoe UI", 0, 11)); // NOI18N
+        Fondo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GUI/Chats.png"))); // NOI18N
+        getContentPane().add(Fondo, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 6, 1270, 730));
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+    
+   
+    
+    private void frButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_frButtonActionPerformed
+        new FriendRequests(client);
+    }//GEN-LAST:event_frButtonActionPerformed
+
+    private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
+       String message = messageField.getText();
+
+        if (message.isBlank()) {
+            return;
+        }
+
+        this.client.sendMessage(activeChatUser, message);
+        this.updateChat();
+    }//GEN-LAST:event_sendButtonActionPerformed
+
+    private void addFriendButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFriendButton1ActionPerformed
+        new FriendRequest(client);
+    }//GEN-LAST:event_addFriendButton1ActionPerformed
+
+    private void removeFriendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeFriendButtonActionPerformed
+        PasswordConfirmation passwordConfirmation = new PasswordConfirmation(client);
+
+        if (!passwordConfirmation.getIsValid()) {
+                return;
+        }
+        boolean res = client.requestRemoveFriend(activeChatUser, passwordConfirmation.getName(), passwordConfirmation.getPassword());
+
+        if (!res) {
+                return;
+        }
+        this.activeChatUser = null;
+        this.friendList.clearSelection();
+        this.pack();
+        this.setVisible(true);
+    }//GEN-LAST:event_removeFriendButtonActionPerformed
+
+    private void messageFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_messageFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_messageFieldActionPerformed
+
+    public void updateChat() {
+
+        Chat chat = this.client.getUser().getChats().get(this.activeChatUser);
+
+        chat.readMessages();
+        updateConnectedFriends();
+
+        DefaultTableModel model = new DefaultTableModel();
+
+        model.setColumnCount(2);
+
+        for (int i = 0; i < chat.getMessages().size(); i++) {
+
+                boolean myMessage = chat.getOrder().get(i);
+
+                Object[] rowData;
+
+                if (myMessage) {
+
+                        rowData = new Object[]{"", chat.getMessages().get(i)};
+
+                } else {
+
+                        rowData = new Object[]{chat.getMessages().get(i), ""};
+
+                }
+
+                model.addRow(rowData);
+
+        }
+
+        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer();
+        renderer.setHorizontalAlignment(SwingConstants.RIGHT);
+
+        this.chatTable.setModel(model);
+        this.chatTable.getColumnModel().getColumn(1).setCellRenderer(renderer);
+
+    }
+    
+    @Override
+    public void updateChats(User user) {
+
+            if (user.equals(activeChatUser)) {
+
+                    updateChat();
+
+            } else {
+
+                    updateConnectedFriends();
+
+            }
+
+    }
+    
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel Fondo;
+    private javax.swing.JButton addFriendButton1;
+    private javax.swing.JLabel cfLabel;
+    private javax.swing.JTable chatTable;
+    private javax.swing.JLabel errorLabel;
+    private javax.swing.JButton frButton;
+    private javax.swing.JList<ListUser> friendList;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jTable;
+    private javax.swing.JTextField messageField;
+    private javax.swing.JLabel nameLabel;
+    private javax.swing.JLabel numerOfFriendsRequests;
+    private javax.swing.JButton removeFriendButton;
+    private javax.swing.JButton sendButton;
+    private javax.swing.JLabel tittleLabel;
+    // End of variables declaration//GEN-END:variables
 }

@@ -1,7 +1,7 @@
-package src.client;
+package client;
 
-import src.model.FriendRequest;
-import src.model.User;
+import model.FriendRequest;
+import model.User;
 
 import java.rmi.*;
 
