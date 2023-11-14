@@ -5,21 +5,23 @@ import java.awt.event.WindowEvent;
 import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE;
 
 public class PasswordConfirmation extends javax.swing.JDialog {
+
     private final ClientImpl client;
     public boolean isValid;
+
     public PasswordConfirmation(ClientImpl client) {
         initComponents();
         this.isValid = false;
         this.client = client;
-           
+
         this.errorLabel.setOpaque(false);
         this.getRootPane().setDefaultButton(buttonOK);
         this.setModal(true);
         // Si se cierra abruptamente deslogueamos al cliente
         this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        this.addWindowListener(new WindowAdapter(){
+        this.addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(WindowEvent e){
+            public void windowClosing(WindowEvent e) {
                 client.requestLogout();
                 client.end();
                 dispose();
@@ -60,7 +62,6 @@ public class PasswordConfirmation extends javax.swing.JDialog {
         getContentPane().add(buttonOK, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 390, 330, 50));
 
         passwordField.setBackground(new java.awt.Color(220, 232, 255));
-        passwordField.setForeground(new java.awt.Color(0, 0, 0));
         passwordField.setBorder(null);
         passwordField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -82,7 +83,6 @@ public class PasswordConfirmation extends javax.swing.JDialog {
 
         nameField.setBackground(new java.awt.Color(220, 232, 255));
         nameField.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        nameField.setForeground(new java.awt.Color(0, 0, 0));
         nameField.setBorder(null);
         nameField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -108,6 +108,7 @@ public class PasswordConfirmation extends javax.swing.JDialog {
         this.errorLabel.setOpaque(true);
 
         if (isValid) {
+
             this.isValid = true;
             this.dispose();
 
@@ -124,25 +125,27 @@ public class PasswordConfirmation extends javax.swing.JDialog {
     }//GEN-LAST:event_passwordFieldActionPerformed
 
     private void buttonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCancelActionPerformed
-        // Managed in constructor
+
+        this.dispose();
+
     }//GEN-LAST:event_buttonCancelActionPerformed
 
     private void nameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameFieldActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_nameFieldActionPerformed
 
-    public String getName(){
+    public String getName() {
         return this.nameField.getText();
     }
-    
-    public String getPassword(){
+
+    public String getPassword() {
         return new String(this.passwordField.getPassword());
     }
-    
-    public boolean getIsValid(){
+
+    public boolean getIsValid() {
         return this.isValid;
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel Fondo;
     private javax.swing.JButton buttonCancel;

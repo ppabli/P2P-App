@@ -8,365 +8,365 @@ import java.util.ArrayList;
 
 public class DataBase {
 
-	private final Connection con;
+    private final Connection con;
 
-	public DataBase() throws SQLException {
+    public DataBase() throws SQLException {
 
-		this.con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "david");
+        this.con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "postgres");
 
-	}
+    }
 
-	public boolean registerUser(String name, String password) {
+    public boolean registerUser(String name, String password) {
 
-		try {
+        try {
 
-			PreparedStatement statement = con.prepareStatement("insert into users (name, password) values (?, ?)");
+            PreparedStatement statement = con.prepareStatement("insert into users (name, password) values (?, ?)");
 
-			statement.setString(1, name);
-			statement.setString(2, password);
+            statement.setString(1, name);
+            statement.setString(2, password);
 
-			statement.executeUpdate();
+            statement.executeUpdate();
 
-			return true;
+            return true;
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Database | Error: " + e.getMessage());
-			return false;
+            System.out.println("Database | Error: " + e.getMessage());
+            return false;
 
-		}
+        }
 
-	}
+    }
 
-	public FriendRequest registerFriendRequest(String name, String friendName) {
+    public FriendRequest registerFriendRequest(String name, String friendName) {
 
-		try {
+        try {
 
-			// Obtenemos los usuarios
-			User user1 = this.getUser(name);
-			User user2 = this.getUser(friendName);
+            // Obtenemos los usuarios
+            User user1 = this.getUser(name);
+            User user2 = this.getUser(friendName);
 
-			// Comprobamos que no este ya en sus amigos
-			ArrayList<User> friends = this.getFriends(user1.getId());
+            // Comprobamos que no este ya en sus amigos
+            ArrayList<User> friends = this.getFriends(user1.getId());
 
-			if (friends.contains(user2)) {
-				return null;
-			}
+            if (friends.contains(user2)) {
+                return null;
+            }
 
-			ArrayList<FriendRequest> requests = this.getFriendRequest(user2.getId());
+            ArrayList<FriendRequest> requests = this.getFriendRequest(user2.getId());
 
-			if (requests.contains(new FriendRequest(-1, user1.getName()))) {
-				return null;
-			}
+            if (requests.contains(new FriendRequest(-1, user1.getName()))) {
+                return null;
+            }
 
-			PreparedStatement statement = this.con.prepareStatement("insert into friend_requests (user_id, friend_id) values (?, ?)");
+            PreparedStatement statement = this.con.prepareStatement("insert into friend_requests (user_id, friend_id) values (?, ?)");
 
-			statement.setInt(1, user1.getId());
-			statement.setInt(2, user2.getId());
+            statement.setInt(1, user1.getId());
+            statement.setInt(2, user2.getId());
 
-			int res = statement.executeUpdate();
+            int res = statement.executeUpdate();
 
-			if (res > 0) {
+            if (res > 0) {
 
-				ArrayList<FriendRequest> request = this.getFriendRequest(user2.getId());
-				return request.get(request.size() - 1);
+                ArrayList<FriendRequest> request = this.getFriendRequest(user2.getId());
+                return request.get(request.size() - 1);
 
-			}
+            }
 
-			return null;
+            return null;
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Database | Error: " + e.getMessage());
-			return null;
+            System.out.println("Database | Error: " + e.getMessage());
+            return null;
 
-		}
+        }
 
-	}
+    }
 
-	public boolean acceptFriendRequest(int requestId, String name, String friendName) {
+    public boolean acceptFriendRequest(int requestId, String name, String friendName) {
 
-		try {
+        try {
 
-			User user1 = this.getUser(name);
-			User user2 = this.getUser(friendName);
+            User user1 = this.getUser(name);
+            User user2 = this.getUser(friendName);
 
-			PreparedStatement statement = this.con.prepareStatement("select * from friend_requests where id = ? and user_id = ? and friend_id = ?");
+            PreparedStatement statement = this.con.prepareStatement("select * from friend_requests where id = ? and user_id = ? and friend_id = ?");
 
-			statement.setInt(1, requestId);
-			statement.setInt(2, user2.getId());
-			statement.setInt(3, user1.getId());
+            statement.setInt(1, requestId);
+            statement.setInt(2, user2.getId());
+            statement.setInt(3, user1.getId());
 
-			ResultSet rs = statement.executeQuery();
+            ResultSet rs = statement.executeQuery();
 
-			if (rs.next()) {
+            if (rs.next()) {
 
-				// Borramos la peticion
-				statement = this.con.prepareStatement("delete from friend_requests where id = ? and user_id = ? and friend_id = ?");
+                // Borramos la peticion
+                statement = this.con.prepareStatement("delete from friend_requests where id = ? and user_id = ? and friend_id = ?");
 
-				statement.setInt(1, requestId);
-				statement.setInt(2, user2.getId());
-				statement.setInt(3, user1.getId());
+                statement.setInt(1, requestId);
+                statement.setInt(2, user2.getId());
+                statement.setInt(3, user1.getId());
 
-				int res = statement.executeUpdate();
+                int res = statement.executeUpdate();
 
-				if (res > 0) {
+                if (res > 0) {
 
-					statement = this.con.prepareStatement("insert into friends (user_id, friend_id) values (?, ?), (?, ?)");
+                    statement = this.con.prepareStatement("insert into friends (user_id, friend_id) values (?, ?), (?, ?)");
 
-					statement.setInt(1, user1.getId());
-					statement.setInt(2, user2.getId());
-					statement.setInt(3, user2.getId());
-					statement.setInt(4, user1.getId());
+                    statement.setInt(1, user1.getId());
+                    statement.setInt(2, user2.getId());
+                    statement.setInt(3, user2.getId());
+                    statement.setInt(4, user1.getId());
 
-					res = statement.executeUpdate();
+                    res = statement.executeUpdate();
 
-					return res > 0;
+                    return res > 0;
 
-				} else {
+                } else {
 
-					return false;
+                    return false;
 
-				}
+                }
 
-			} else {
+            } else {
 
-				return false;
+                return false;
 
-			}
+            }
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Database | Error: " + e.getMessage());
-			return false;
+            System.out.println("Database | Error: " + e.getMessage());
+            return false;
 
-		}
+        }
 
-	}
+    }
 
-	public boolean declineFriendRequest(int requestId, String name, String friendName) {
+    public boolean declineFriendRequest(int requestId, String name, String friendName) {
 
-		try {
+        try {
 
-			User user1 = this.getUser(name);
-			User user2 = this.getUser(friendName);
+            User user1 = this.getUser(name);
+            User user2 = this.getUser(friendName);
 
-			PreparedStatement statement = this.con.prepareStatement("select * from friend_requests where id = ? and user_id = ? and friend_id = ?");
+            PreparedStatement statement = this.con.prepareStatement("select * from friend_requests where id = ? and user_id = ? and friend_id = ?");
 
-			statement.setInt(1, requestId);
-			statement.setInt(2, user2.getId());
-			statement.setInt(3, user1.getId());
+            statement.setInt(1, requestId);
+            statement.setInt(2, user2.getId());
+            statement.setInt(3, user1.getId());
 
-			ResultSet rs = statement.executeQuery();
+            ResultSet rs = statement.executeQuery();
 
-			if (rs.next()) {
+            if (rs.next()) {
 
-				// Borramos la peticion
-				statement = this.con.prepareStatement("delete from friend_requests where id = ? and user_id = ? and friend_id = ?");
+                // Borramos la peticion
+                statement = this.con.prepareStatement("delete from friend_requests where id = ? and user_id = ? and friend_id = ?");
 
-				statement.setInt(1, requestId);
-				statement.setInt(2, user2.getId());
-				statement.setInt(3, user1.getId());
+                statement.setInt(1, requestId);
+                statement.setInt(2, user2.getId());
+                statement.setInt(3, user1.getId());
 
-				int res = statement.executeUpdate();
+                int res = statement.executeUpdate();
 
-				return res > 0;
+                return res > 0;
 
-			} else {
+            } else {
 
-				return false;
+                return false;
 
-			}
+            }
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Database | Error: " + e.getMessage());
-			return false;
+            System.out.println("Database | Error: " + e.getMessage());
+            return false;
 
-		}
+        }
 
-	}
+    }
 
-	public User getUser(String name) {
+    public User getUser(String name) {
 
-		try {
+        try {
 
-			// Obtenemos el usuario de la base de datos
-			// Preparamos la query
-			PreparedStatement statement = con.prepareStatement("select * from users where name = ?");
-			statement.setString(1, name);
+            // Obtenemos el usuario de la base de datos
+            // Preparamos la query
+            PreparedStatement statement = con.prepareStatement("select * from users where name = ?");
+            statement.setString(1, name);
 
-			// Ejecutamos la consulta
-			ResultSet rs = statement.executeQuery();
+            // Ejecutamos la consulta
+            ResultSet rs = statement.executeQuery();
 
-			// Si existe alguno
-			if (rs.next()) {
+            // Si existe alguno
+            if (rs.next()) {
 
-				return new User(rs.getInt("id"), rs.getString("name"));
+                return new User(rs.getInt("id"), rs.getString("name"));
 
-			} else {
+            } else {
 
-				return null;
+                return null;
 
-			}
+            }
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Database | Error: " + e.getMessage());
-			return null;
+            System.out.println("Database | Error: " + e.getMessage());
+            return null;
 
-		}
+        }
 
-	}
+    }
 
-	public User getUserWithPassword(String name, String password) {
+    public User getUserWithPassword(String name, String password) {
 
-		try {
+        try {
 
-			// Obtenemos el usuario de la base de datos
-			// Preparamos la query
-			PreparedStatement statement = con.prepareStatement("select * from users where name = ? and password = ?");
-			statement.setString(1, name);
-			statement.setString(2, password);
-                        System.out.println("StatementFinal: " + statement);
+            // Obtenemos el usuario de la base de datos
+            // Preparamos la query
+            PreparedStatement statement = con.prepareStatement("select * from users where name = ? and password = ?");
+            statement.setString(1, name);
+            statement.setString(2, password);
+            System.out.println("StatementFinal: " + statement);
 
-			// Ejecutamos la consulta
-			ResultSet rs = statement.executeQuery();
+            // Ejecutamos la consulta
+            ResultSet rs = statement.executeQuery();
 
-			// Si existe alguno
-			if (rs.next()) {
-                                System.out.println("TRUE");
-				return new User(rs.getInt("id"), rs.getString("name"));
+            // Si existe alguno
+            if (rs.next()) {
+                System.out.println("TRUE");
+                return new User(rs.getInt("id"), rs.getString("name"));
 
-			} else {
-				return null;
+            } else {
+                return null;
 
-			}
+            }
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Database | Error: " + e.getMessage());
-			return null;
+            System.out.println("Database | Error: " + e.getMessage());
+            return null;
 
-		}
+        }
 
-	}
+    }
 
-	public ArrayList<User> getFriends(int userId) {
+    public ArrayList<User> getFriends(int userId) {
 
-		try {
+        try {
 
-			PreparedStatement statement = con.prepareStatement("select * from friends where user_id = ?");
-			statement.setInt(1, userId);
+            PreparedStatement statement = con.prepareStatement("select * from friends where user_id = ?");
+            statement.setInt(1, userId);
 
-			ResultSet rs = statement.executeQuery();
+            ResultSet rs = statement.executeQuery();
 
-			ArrayList<User> friends = new ArrayList<>();
+            ArrayList<User> friends = new ArrayList<>();
 
-			while (rs.next()) {
+            while (rs.next()) {
 
-				int friendId = rs.getInt("friend_id");
+                int friendId = rs.getInt("friend_id");
 
-				PreparedStatement statement2 = con.prepareStatement("select * from users where id = ?");
-				statement2.setInt(1, friendId);
+                PreparedStatement statement2 = con.prepareStatement("select * from users where id = ?");
+                statement2.setInt(1, friendId);
 
-				ResultSet rs2 = statement2.executeQuery();
+                ResultSet rs2 = statement2.executeQuery();
 
-				if (rs2.next()) {
+                if (rs2.next()) {
 
-					int id = rs2.getInt("id");
-					String name = rs2.getString("name");
+                    int id = rs2.getInt("id");
+                    String name = rs2.getString("name");
 
-					friends.add(new User(id, name));
+                    friends.add(new User(id, name));
 
-				}
+                }
 
-			}
+            }
 
-			return friends;
+            return friends;
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Database | Error: " + e.getMessage());
-			return null;
+            System.out.println("Database | Error: " + e.getMessage());
+            return null;
 
-		}
+        }
 
-	}
+    }
 
-	public ArrayList<FriendRequest> getFriendRequest(int userId) {
+    public ArrayList<FriendRequest> getFriendRequest(int userId) {
 
-		try {
+        try {
 
-			PreparedStatement statement = con.prepareStatement("select * from friend_requests where friend_id = ?");
-			statement.setInt(1, userId);
+            PreparedStatement statement = con.prepareStatement("select * from friend_requests where friend_id = ?");
+            statement.setInt(1, userId);
 
-			ResultSet rs = statement.executeQuery();
+            ResultSet rs = statement.executeQuery();
 
-			ArrayList<FriendRequest> requests = new ArrayList<>();
+            ArrayList<FriendRequest> requests = new ArrayList<>();
 
-			while (rs.next()) {
+            while (rs.next()) {
 
-				int requestId = rs.getInt("id");
-				int friendId = rs.getInt("user_id");
+                int requestId = rs.getInt("id");
+                int friendId = rs.getInt("user_id");
 
-				PreparedStatement statement2 = con.prepareStatement("select * from users where id = ?");
-				statement2.setInt(1, friendId);
+                PreparedStatement statement2 = con.prepareStatement("select * from users where id = ?");
+                statement2.setInt(1, friendId);
 
-				ResultSet rs2 = statement2.executeQuery();
+                ResultSet rs2 = statement2.executeQuery();
 
-				if (rs2.next()) {
+                if (rs2.next()) {
 
-					String friendName = rs2.getString("name");
+                    String friendName = rs2.getString("name");
 
-					requests.add(new FriendRequest(requestId, friendName));
+                    requests.add(new FriendRequest(requestId, friendName));
 
-				}
+                }
 
-			}
+            }
 
-			return requests;
+            return requests;
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Database | Error: " + e.getMessage());
-			return null;
+            System.out.println("Database | Error: " + e.getMessage());
+            return null;
 
-		}
+        }
 
-	}
+    }
 
-	public boolean removeFriend(String name, String friendName) {
+    public boolean removeFriend(String name, String friendName) {
 
-		try {
+        try {
 
-			User me = this.getUser(name);
-			User friend = this.getUser(friendName);
+            User me = this.getUser(name);
+            User friend = this.getUser(friendName);
 
-			ArrayList<User> friends = this.getFriends(me.getId());
+            ArrayList<User> friends = this.getFriends(me.getId());
 
-			if (!friends.contains(friend)) {
-				return true;
-			}
+            if (!friends.contains(friend)) {
+                return true;
+            }
 
-			PreparedStatement statement = this.con.prepareStatement("delete from friends where (user_id = ? and friend_id = ?) or (user_id = ? and friend_id = ?)");
+            PreparedStatement statement = this.con.prepareStatement("delete from friends where (user_id = ? and friend_id = ?) or (user_id = ? and friend_id = ?)");
 
-			statement.setInt(1, me.getId());
-			statement.setInt(2, friend.getId());
-			statement.setInt(3, friend.getId());
-			statement.setInt(4, me.getId());
+            statement.setInt(1, me.getId());
+            statement.setInt(2, friend.getId());
+            statement.setInt(3, friend.getId());
+            statement.setInt(4, me.getId());
 
-			int res = statement.executeUpdate();
+            int res = statement.executeUpdate();
 
-			return res > 0;
+            return res > 0;
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Database | Error: " + e.getMessage());
-			return false;
+            System.out.println("Database | Error: " + e.getMessage());
+            return false;
 
-		}
+        }
 
-	}
+    }
 
 }

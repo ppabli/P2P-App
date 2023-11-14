@@ -14,302 +14,302 @@ import java.util.Map;
 
 public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
-	private final ServerInterface serverObject;
-	private User user;
-	private final ArrayList<Observer> observers;
+    private final ServerInterface serverObject;
+    private User user;
+    private final ArrayList<Observer> observers;
 
-	protected ClientImpl(ServerInterface serverObject) throws Exception {
+    protected ClientImpl(ServerInterface serverObject) throws Exception {
 
-		super();
+        super();
 
-		this.serverObject = serverObject;
+        this.serverObject = serverObject;
 
-		this.observers = new ArrayList<>();
+        this.observers = new ArrayList<>();
 
-		new Login(this);
+        new Login(this);
 
-	}
+    }
 
-	public void addObserver(Observer observer) {
+    public void addObserver(Observer observer) {
 
-		this.observers.add(observer);
+        this.observers.add(observer);
 
-	}
+    }
 
-	public boolean requestFriend(String friendName, String name, String password) {
+    public boolean requestFriend(String friendName, String name, String password) {
 
-		try {
+        try {
 
-			return this.serverObject.requestFriend(this, friendName, name, password);
+            return this.serverObject.requestFriend(this, friendName, name, password);
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Client | Error: " + e.getMessage());
-			return false;
+            System.out.println("Client | Error: " + e.getMessage());
+            return false;
 
-		}
+        }
 
-	}
+    }
 
-	public boolean requestLogin(String name, String password) {
+    public boolean requestLogin(String name, String password) {
 
-		try {
+        try {
 
-			this.user = this.serverObject.login(this, name, password);
+            this.user = this.serverObject.login(this, name, password);
 
-			return this.user != null;
+            return this.user != null;
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Client | Error: " + e.getMessage());
-			return false;
+            System.out.println("Client | Error: " + e.getMessage());
+            return false;
 
-		}
+        }
 
-	}
+    }
 
-	public boolean requestValidation(String name, String password) {
+    public boolean requestValidation(String name, String password) {
 
-		try {
-                        System.out.println("requestValidation: " + this.serverObject.validateRequest(this, name, password));
-			return this.serverObject.validateRequest(this, name, password);
+        try {
+            System.out.println("requestValidation: " + this.serverObject.validateRequest(this, name, password));
+            return this.serverObject.validateRequest(this, name, password);
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Client | Error: " + e.getMessage());
-			return false;
+            System.out.println("Client | Error: " + e.getMessage());
+            return false;
 
-		}
+        }
 
-	}
+    }
 
-	public boolean requestRegister(String name, String password) {
+    public boolean requestRegister(String name, String password) {
 
-		try {
+        try {
 
-			return this.serverObject.register(name, password);
+            return this.serverObject.register(name, password);
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Client | Error: " + e.getMessage());
-			return false;
+            System.out.println("Client | Error: " + e.getMessage());
+            return false;
 
-		}
+        }
 
-	}
+    }
 
-	public void requestLogout() {
+    public void requestLogout() {
 
-		try {
+        try {
 
-			this.serverObject.logout(this, this.user);
+            this.serverObject.logout(this, this.user);
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Client | Error: " + e.getMessage());
+            System.out.println("Client | Error: " + e.getMessage());
 
-		}
+        }
 
-	}
+    }
 
-	public boolean requestAcceptFriendRequest(int requestId, String friendName, String name, String password) {
+    public boolean requestAcceptFriendRequest(int requestId, String friendName, String name, String password) {
 
-		try {
+        try {
 
-			boolean res = this.serverObject.acceptFriendRequest(this, requestId, friendName, name, password);
+            boolean res = this.serverObject.acceptFriendRequest(this, requestId, friendName, name, password);
 
-			if (!res) {
-				return false;
-			}
+            if (!res) {
+                return false;
+            }
 
-			this.user.removeFriendRequest(friendName);
+            this.user.removeFriendRequest(friendName);
 
-			for(Observer observer : this.observers) {
+            for (Observer observer : this.observers) {
 
-				observer.updateFriendRequests();
+                observer.updateFriendRequests();
 
-			}
+            }
 
-			return true;
+            return true;
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Client | Error: " + e.getMessage());
-			return false;
-		}
+            System.out.println("Client | Error: " + e.getMessage());
+            return false;
+        }
 
-	}
+    }
 
-	public boolean requestDeclineFriendRequest(int requestId, String friendName, String name, String password) {
+    public boolean requestDeclineFriendRequest(int requestId, String friendName, String name, String password) {
 
-		try {
+        try {
 
-			boolean res = this.serverObject.declineFriendRequest(this, requestId, friendName, name, password);
+            boolean res = this.serverObject.declineFriendRequest(this, requestId, friendName, name, password);
 
-			if (!res) {
-				return false;
-			}
+            if (!res) {
+                return false;
+            }
 
-			this.user.removeFriendRequest(friendName);
+            this.user.removeFriendRequest(friendName);
 
-			for(Observer observer : this.observers) {
+            for (Observer observer : this.observers) {
 
-				observer.updateFriendRequests();
+                observer.updateFriendRequests();
 
-			}
+            }
 
-			return true;
+            return true;
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Client | Error: " + e.getMessage());
-			return false;
+            System.out.println("Client | Error: " + e.getMessage());
+            return false;
 
-		}
+        }
 
-	}
+    }
 
-	public boolean requestRemoveFriend(User friend, String name, String password) {
+    public boolean requestRemoveFriend(User friend, String name, String password) {
 
-		try {
+        try {
 
-			boolean res = this.serverObject.removeFriend(this, friend.getName(), name, password);
+            boolean res = this.serverObject.removeFriend(this, friend.getName(), name, password);
 
-			if (!res) {
-				return false;
-			}
+            if (!res) {
+                return false;
+            }
 
-			this.user.removeConnectedFriend(friend, true);
+            this.user.removeConnectedFriend(friend, true);
 
-			for(Observer observer : this.observers) {
+            for (Observer observer : this.observers) {
 
-				observer.updateConnectedFriends();
+                observer.updateConnectedFriends();
 
-			}
+            }
 
-			return true;
+            return true;
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Client | Error: " + e.getMessage());
-			return false;
+            System.out.println("Client | Error: " + e.getMessage());
+            return false;
 
-		}
+        }
 
-	}
+    }
 
-	@Override
-	public void notifyMessage(ClientInterface friendClient, User user, String message) throws RemoteException {
+    @Override
+    public void notifyMessage(ClientInterface friendClient, User user, String message) throws RemoteException {
 
-		User friend = null;
+        User friend = null;
 
-		for (Map.Entry<User, ClientInterface> entry : this.user.getConnectedFriends().entrySet()) {
+        for (Map.Entry<User, ClientInterface> entry : this.user.getConnectedFriends().entrySet()) {
 
-			if (entry.getValue().equals(friendClient)) {
+            if (entry.getValue().equals(friendClient)) {
 
-				friend = entry.getKey();
-				break;
+                friend = entry.getKey();
+                break;
 
-			}
+            }
 
-		}
+        }
 
-		if (friend == null || !friend.equals(user)) {
-			return;
-		}
+        if (friend == null || !friend.equals(user)) {
+            return;
+        }
 
-		Chat chat = this.user.getChats().get(friend);
+        Chat chat = this.user.getChats().get(friend);
 
-		chat.addMessage(message, false);
+        chat.addMessage(message, false);
 
-		for(Observer observer : this.observers) {
+        for (Observer observer : this.observers) {
 
-			observer.updateChats(friend);
+            observer.updateChats(friend);
 
-		}
+        }
 
-	}
+    }
 
-	@Override
-	public void notifyFriendRequest(FriendRequest request) throws RemoteException {
+    @Override
+    public void notifyFriendRequest(FriendRequest request) throws RemoteException {
 
-		this.user.addFriendRequest(request);
+        this.user.addFriendRequest(request);
 
-		for(Observer observer : this.observers) {
+        for (Observer observer : this.observers) {
 
-			observer.updateFriendRequests();
+            observer.updateFriendRequests();
 
-		}
+        }
 
-	}
+    }
 
-	@Override
-	public void notifyConnectedFriend(ClientInterface client, User user) throws RemoteException {
+    @Override
+    public void notifyConnectedFriend(ClientInterface client, User user) throws RemoteException {
 
-		this.user.addConnectedFriend(user, client);
+        this.user.addConnectedFriend(user, client);
 
-		for(Observer observer : this.observers) {
+        for (Observer observer : this.observers) {
 
-			observer.updateConnectedFriends();
+            observer.updateConnectedFriends();
 
-		}
+        }
 
-	}
+    }
 
-	@Override
-	public void notifyDisconnectedFriend(User user) throws RemoteException {
+    @Override
+    public void notifyDisconnectedFriend(User user, boolean removeChat) throws RemoteException {
 
-		this.user.removeConnectedFriend(user, false);
+        this.user.removeConnectedFriend(user, removeChat);
 
-		for(Observer observer : this.observers) {
+        for (Observer observer : this.observers) {
 
-			observer.updateConnectedFriends();
+            observer.updateConnectedFriends();
 
-		}
+        }
 
-	}
+    }
 
-	public void sendMessage(User user, String message) {
+    public void sendMessage(User user, String message) {
 
-		try {
+        try {
 
-			ClientInterface friendClient = this.user.getConnectedFriends().get(user);
+            ClientInterface friendClient = this.user.getConnectedFriends().get(user);
 
-			if (friendClient == null) {
-				return;
-			}
+            if (friendClient == null) {
+                return;
+            }
 
-			friendClient.notifyMessage(this, new User(this.user.getId(), this.user.getName()), message);
-			Chat chat = this.user.getChats().get(user);
+            friendClient.notifyMessage(this, new User(this.user.getId(), this.user.getName()), message);
+            Chat chat = this.user.getChats().get(user);
 
-			chat.addMessage(message, true);
+            chat.addMessage(message, true);
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Client | Error: " + e.getMessage());
+            System.out.println("Client | Error: " + e.getMessage());
 
-		}
+        }
 
-	}
+    }
 
-	public User getUser() {
+    public User getUser() {
 
-		return this.user;
+        return this.user;
 
-	}
+    }
 
-	public void end() {
+    public void end() {
 
-		try {
+        try {
 
-			UnicastRemoteObject.unexportObject(this, true);
+            UnicastRemoteObject.unexportObject(this, true);
 
-		} catch (NoSuchObjectException e) {
+        } catch (NoSuchObjectException e) {
 
-			System.out.println("Client | Error: " + e.getMessage());
+            System.out.println("Client | Error: " + e.getMessage());
 
-		}
+        }
 
-	}
+    }
 
 }

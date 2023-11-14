@@ -9,7 +9,9 @@ package client;
  * @author David
  */
 public class Login extends javax.swing.JFrame {
+
     private final ClientImpl client;
+
     /**
      * Creates new form Login
      */
@@ -55,8 +57,6 @@ public class Login extends javax.swing.JFrame {
 
         nameText.setBackground(new java.awt.Color(220, 232, 255));
         nameText.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        nameText.setForeground(new java.awt.Color(0, 0, 0));
-        nameText.setText("Usuario");
         nameText.setBorder(null);
         getContentPane().add(nameText, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 206, 310, 60));
         getContentPane().add(errorLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 540, -1, -1));
@@ -72,7 +72,6 @@ public class Login extends javax.swing.JFrame {
         getContentPane().add(buttonCancel, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 620, 110, 30));
 
         passwordField.setBackground(new java.awt.Color(220, 232, 255));
-        passwordField.setForeground(new java.awt.Color(0, 0, 0));
         passwordField.setBorder(null);
         passwordField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -102,37 +101,37 @@ public class Login extends javax.swing.JFrame {
         String password = new String(this.passwordField.getPassword());
 
         if (userName.isBlank() || password.isBlank()) {
-                return;
+            return;
         }
 
         boolean res = this.client.requestLogin(userName, password);
 
         if (res) {
 
-                new App(this.client);
-                this.onCancel();
+            new App(this.client);
+            this.onCancel();
 
         } else {
 
-                this.errorLabel.setOpaque(true);
-                this.errorLabel.setText("User or password not valid");
+            this.errorLabel.setOpaque(true);
+            this.errorLabel.setText("User or password not valid");
 
         }
     }//GEN-LAST:event_buttonOKActionPerformed
-    
+
     private void onCancel() {
 
         dispose();
 
     }
-    
+
     private void registerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerButtonActionPerformed
         boolean res = client.requestRegister(nameText.getText(), new String(this.passwordField.getPassword()));
         errorLabel.setOpaque(true);
         if (res) {
-                errorLabel.setText("User created successfully");
+            errorLabel.setText("User created successfully");
         } else {
-                errorLabel.setText("Error creating user");
+            errorLabel.setText("Error creating user");
         }
     }//GEN-LAST:event_registerButtonActionPerformed
 
@@ -143,7 +142,6 @@ public class Login extends javax.swing.JFrame {
     private void passwordFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_passwordFieldActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_passwordFieldActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonCancel;
