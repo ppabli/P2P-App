@@ -23,6 +23,7 @@ public class App extends javax.swing.JFrame implements Observer {
 
         this.client = client;
         this.client.addObserver(this);
+
         this.tittleLabel.setForeground(new java.awt.Color(255, 255, 255));
         this.tittleLabel.setFont(new java.awt.Font("Segoe UI", 1, 12));
         this.tittleLabel.setText("Hey " + client.getUser().getName());
@@ -38,26 +39,7 @@ public class App extends javax.swing.JFrame implements Observer {
             }
         });
 
-        friendList.addListSelectionListener(e -> {
-
-            ListUser listUser = friendList.getSelectedValue();
-
-            this.noChatLabel.setVisible(listUser == null);
-
-            if (listUser == null) {
-                return;
-            }
-
-            this.activeChatUser = listUser.getUser();
-            this.nameLabel.setForeground(new java.awt.Color(255, 255, 255));
-            this.nameLabel.setFont(new java.awt.Font("Segoe UI", 1, 12));
-            this.nameLabel.setText(listUser.getUser().getName());
-
-            updateChat();
-
-        });
-
-        this.chatTable.setTableHeader(null);
+        this.chatTable.getTableHeader().setVisible(false);
 
         this.noChatLabel.setVisible(true);
 
@@ -70,6 +52,7 @@ public class App extends javax.swing.JFrame implements Observer {
     }
 
     public void updateFriendRequests() {
+
         this.numerOfFriendsRequests.setForeground(new java.awt.Color(255, 255, 255));
         this.numerOfFriendsRequests.setFont(new java.awt.Font("Segoe UI", 1, 18));
         this.numerOfFriendsRequests.setText("" + client.getUser().getFriendRequests().size());
@@ -77,6 +60,7 @@ public class App extends javax.swing.JFrame implements Observer {
     }
 
     public void updateConnectedFriends() {
+
         this.cfLabel.setForeground(new java.awt.Color(255, 255, 255));
         this.cfLabel.setFont(new java.awt.Font("Segoe UI", 1, 12));
         this.cfLabel.setText("Connected friends  " + client.getUser().getConnectedFriends().size());
@@ -135,7 +119,8 @@ public class App extends javax.swing.JFrame implements Observer {
 
         noChatLabel.setBackground(new java.awt.Color(255, 255, 255));
         noChatLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GUI/NoChat.png"))); // NOI18N
-        getContentPane().add(noChatLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 110, 820, 520));
+        noChatLabel.setOpaque(true);
+        getContentPane().add(noChatLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 110, 770, 520));
         getContentPane().add(errorLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 540, -1, -1));
 
         sendButton.setBorder(null);
@@ -177,9 +162,9 @@ public class App extends javax.swing.JFrame implements Observer {
         messageField.setForeground(new java.awt.Color(255, 255, 255));
         messageField.setText("Mensaje");
         messageField.setBorder(null);
-        messageField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                messageFieldActionPerformed(evt);
+        messageField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                messageFieldFocusGained(evt);
             }
         });
         getContentPane().add(messageField, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 585, 600, 20));
@@ -198,6 +183,11 @@ public class App extends javax.swing.JFrame implements Observer {
 
         friendList.setBackground(new java.awt.Color(220, 232, 255));
         friendList.setBorder(null);
+        friendList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                friendListValueChanged(evt);
+            }
+        });
         jScrollPane2.setViewportView(friendList);
 
         getContentPane().add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 150, 260, 400));
@@ -207,37 +197,31 @@ public class App extends javax.swing.JFrame implements Observer {
         chatTable.setBackground(new java.awt.Color(220, 232, 255));
         chatTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null}
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {}
             },
             new String [] {
-                "", ""
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, false
-            };
 
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
             }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
+        ));
         chatTable.setFocusable(false);
         chatTable.setGridColor(new java.awt.Color(220, 232, 255));
         chatTable.setRequestFocusEnabled(false);
@@ -294,12 +278,14 @@ public class App extends javax.swing.JFrame implements Observer {
         this.client.sendMessage(activeChatUser, message);
         this.updateChat();
 
-        this.messageField.setText("");
+        this.messageField.setText("Message");
 
     }//GEN-LAST:event_sendButtonActionPerformed
 
     private void addFriendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFriendButtonActionPerformed
+
         new FriendRequest(client);
+
     }//GEN-LAST:event_addFriendButtonActionPerformed
 
     private void logoutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutButtonActionPerformed
@@ -309,10 +295,6 @@ public class App extends javax.swing.JFrame implements Observer {
         dispose();
 
     }//GEN-LAST:event_logoutButtonActionPerformed
-
-    private void messageFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_messageFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_messageFieldActionPerformed
 
     private void removeFriendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeFriendButtonActionPerformed
 
@@ -333,6 +315,31 @@ public class App extends javax.swing.JFrame implements Observer {
         this.setVisible(true);
 
     }//GEN-LAST:event_removeFriendButtonActionPerformed
+
+    private void friendListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_friendListValueChanged
+
+        ListUser listUser = friendList.getSelectedValue();
+
+        this.noChatLabel.setVisible(listUser != null);
+
+        if (listUser == null) {
+            return;
+        }
+
+        this.activeChatUser = listUser.getUser();
+        this.nameLabel.setForeground(new java.awt.Color(255, 255, 255));
+        this.nameLabel.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        this.nameLabel.setText(listUser.getUser().getName());
+
+        updateChat();
+
+    }//GEN-LAST:event_friendListValueChanged
+
+    private void messageFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_messageFieldFocusGained
+
+        this.messageField.setText("");
+
+    }//GEN-LAST:event_messageFieldFocusGained
 
     public void updateChat() {
 
