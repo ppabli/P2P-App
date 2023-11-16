@@ -9,8 +9,12 @@ public class Login extends javax.swing.JFrame {
         initComponents();
 
         this.client = client;
-        this.errorLabel.setOpaque(false);
-        this.getRootPane().setDefaultButton(buttonOK);
+
+        this.errorLabel.setVisible(false);
+
+        this.errorLabel.setForeground(new java.awt.Color(255, 255, 255));
+        this.errorLabel.setFont(new java.awt.Font("Segoe UI", 1, 12));
+
         this.pack();
         this.setVisible(true);
         this.toFront();
@@ -92,22 +96,16 @@ public class Login extends javax.swing.JFrame {
         if (res) {
 
             new App(this.client);
-            this.onCancel();
+            this.dispose();
 
         } else {
 
-            this.errorLabel.setOpaque(true);
+            this.errorLabel.setVisible(true);
             this.errorLabel.setText("User or password not valid");
 
         }
 
     }//GEN-LAST:event_buttonOKActionPerformed
-
-    private void onCancel() {
-
-        dispose();
-
-    }
 
     private void registerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerButtonActionPerformed
 

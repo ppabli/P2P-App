@@ -83,17 +83,13 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
     @Override
     public boolean validateRequest(ClientInterface client, String name, String password) throws RemoteException {
 
-        System.out.println("ValidateRequest");
-        System.out.println("name1: " + name);
-        System.out.println("password1: " + password);
         User user = this.db.getUserWithPassword(name, password);
 
         if (user == null) {
-            System.out.println("ValidateRequest: User = null");
             return false;
 
         }
-        System.out.println("ValidateRequest: haschode.equals(): " + client.equals(this.clients.get(user)));
+
         return client.equals(this.clients.get(user));
 
     }
@@ -113,6 +109,7 @@ public class ServerImpl extends UnicastRemoteObject implements ServerInterface {
 
         // Verificamos que el cliente que hace la peticion es el correcto
         ClientInterface value = this.clients.get(user);
+
         if (client.equals(value)) {
 
             this.clients.remove(user);

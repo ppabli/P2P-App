@@ -1,10 +1,9 @@
 package server;
 
-import model.FriendRequest;
-import model.User;
-
 import java.sql.*;
 import java.util.ArrayList;
+import model.FriendRequest;
+import model.User;
 
 public class DataBase {
 
@@ -228,14 +227,13 @@ public class DataBase {
             PreparedStatement statement = con.prepareStatement("select * from users where name = ? and password = ?");
             statement.setString(1, name);
             statement.setString(2, password);
-            System.out.println("StatementFinal: " + statement);
 
             // Ejecutamos la consulta
             ResultSet rs = statement.executeQuery();
 
             // Si existe alguno
             if (rs.next()) {
-                System.out.println("TRUE");
+
                 return new User(rs.getInt("id"), rs.getString("name"));
 
             } else {

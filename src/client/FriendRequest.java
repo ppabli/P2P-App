@@ -1,20 +1,38 @@
 package client;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import javax.swing.JFrame;
+
 public class FriendRequest extends javax.swing.JFrame {
 
     private final ClientImpl client;
 
     public FriendRequest(ClientImpl client) {
+
         initComponents();
+
         this.client = client;
 
-        this.errorLabel.setOpaque(false);
+        this.errorLabel.setVisible(false);
+
         this.getRootPane().setDefaultButton(buttonOK);
-        this.buttonOK.addActionListener(e -> onOK());
+
+        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                dispose();
+            }
+        });
+
+        this.errorLabel.setForeground(new java.awt.Color(255, 255, 255));
+        this.errorLabel.setFont(new java.awt.Font("Segoe UI", 1, 12));
 
         this.pack();
         this.setVisible(true);
         this.toFront();
+
     }
 
     @SuppressWarnings("unchecked")
@@ -32,8 +50,6 @@ public class FriendRequest extends javax.swing.JFrame {
 
         nameField.setBackground(new java.awt.Color(220, 232, 255));
         nameField.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        nameField.setForeground(new java.awt.Color(0, 0, 0));
-        nameField.setText("Usuario");
         nameField.setBorder(null);
         getContentPane().add(nameField, new org.netbeans.lib.awtextra.AbsoluteConstraints(500, 180, 230, 50));
         getContentPane().add(errorLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(500, 290, -1, -1));
@@ -69,38 +85,37 @@ public class FriendRequest extends javax.swing.JFrame {
     }//GEN-LAST:event_buttonCancelActionPerformed
 
     public void onOK() {
+
         String name = this.nameField.getText();
 
         if (name.isBlank()) {
             return;
         }
-        System.out.println("aaaaaaaa");
+
         PasswordConfirmation passwordConfirmation = new PasswordConfirmation(client);
 
         if (!passwordConfirmation.getIsValid()) {
-            System.out.println("NOT VALID in FriendRequest.java");
             return;
         }
-        System.out.println("ccccccccc");
 
         boolean res = this.client.requestFriend(name, passwordConfirmation.getName(), passwordConfirmation.getPassword());
-        System.out.println("dddddd");
-        this.errorLabel.setOpaque(true);
+        this.errorLabel.setVisible(true);
 
         if (res) {
-            System.out.println("eeeeee");
+
             this.errorLabel.setText("Friend request done");
             this.nameField.setText("");
 
         } else {
-            System.out.println("fffff");
+
             this.errorLabel.setText("Friend request error");
 
         }
+
     }
 
     private void buttonOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonOKActionPerformed
-        // Ya se contempla con el listener en el propio constructor de la clase
+        this.onOK();
     }//GEN-LAST:event_buttonOKActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

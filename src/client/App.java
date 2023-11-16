@@ -1,9 +1,12 @@
 package client;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
+import javax.swing.JScrollBar;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -39,7 +42,25 @@ public class App extends javax.swing.JFrame implements Observer {
             }
         });
 
-        this.chatTable.getTableHeader().setVisible(false);
+        this.scrollChat.setColumnHeaderView(null);
+
+        Color color = new java.awt.Color(255, 255, 255);
+        Font font = new java.awt.Font("Segoe UI", 1, 12);
+
+        this.numerOfFriendsRequests.setForeground(color);
+        this.numerOfFriendsRequests.setFont(font);
+
+        this.cfLabel.setForeground(color);
+        this.cfLabel.setFont(font);
+
+        this.nameLabel.setForeground(color);
+        this.nameLabel.setFont(font);
+
+        this.chatTable.setForeground(color);
+        this.chatTable.setFont(font);
+
+        this.friendList.setForeground(color);
+        this.friendList.setFont(font);
 
         this.noChatLabel.setVisible(true);
 
@@ -53,16 +74,12 @@ public class App extends javax.swing.JFrame implements Observer {
 
     public void updateFriendRequests() {
 
-        this.numerOfFriendsRequests.setForeground(new java.awt.Color(255, 255, 255));
-        this.numerOfFriendsRequests.setFont(new java.awt.Font("Segoe UI", 1, 18));
         this.numerOfFriendsRequests.setText("" + client.getUser().getFriendRequests().size());
 
     }
 
     public void updateConnectedFriends() {
 
-        this.cfLabel.setForeground(new java.awt.Color(255, 255, 255));
-        this.cfLabel.setFont(new java.awt.Font("Segoe UI", 1, 12));
         this.cfLabel.setText("Connected friends  " + client.getUser().getConnectedFriends().size());
 
         boolean activeUserLogout = true;
@@ -85,10 +102,14 @@ public class App extends javax.swing.JFrame implements Observer {
 
             this.activeChatUser = null;
             this.friendList.clearSelection();
+            this.noChatLabel.setVisible(true);
 
         }
 
         this.friendList.setModel(listModel);
+
+        JScrollBar verticalScrollBar = this.scrollFriendList.getVerticalScrollBar();
+        verticalScrollBar.setValue(verticalScrollBar.getMaximum());
 
     }
 
@@ -97,7 +118,6 @@ public class App extends javax.swing.JFrame implements Observer {
     private void initComponents() {
 
         noChatLabel = new javax.swing.JLabel();
-        errorLabel = new javax.swing.JLabel();
         sendButton = new javax.swing.JButton();
         addFriendButton = new javax.swing.JButton();
         logoutButton = new javax.swing.JButton();
@@ -106,9 +126,9 @@ public class App extends javax.swing.JFrame implements Observer {
         cfLabel = new javax.swing.JLabel();
         nameLabel = new javax.swing.JLabel();
         numerOfFriendsRequests = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        scrollFriendList = new javax.swing.JScrollPane();
         friendList = new javax.swing.JList<>();
-        jTable = new javax.swing.JScrollPane();
+        scrollChat = new javax.swing.JScrollPane();
         chatTable = new javax.swing.JTable();
         frButton = new javax.swing.JButton();
         removeFriendButton = new javax.swing.JButton();
@@ -121,7 +141,6 @@ public class App extends javax.swing.JFrame implements Observer {
         noChatLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GUI/NoChat.png"))); // NOI18N
         noChatLabel.setOpaque(true);
         getContentPane().add(noChatLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 110, 770, 520));
-        getContentPane().add(errorLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 540, -1, -1));
 
         sendButton.setBorder(null);
         sendButton.setBorderPainted(false);
@@ -160,13 +179,7 @@ public class App extends javax.swing.JFrame implements Observer {
         messageField.setBackground(new java.awt.Color(45, 102, 212));
         messageField.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         messageField.setForeground(new java.awt.Color(255, 255, 255));
-        messageField.setText("Mensaje");
         messageField.setBorder(null);
-        messageField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                messageFieldFocusGained(evt);
-            }
-        });
         getContentPane().add(messageField, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 585, 600, 20));
 
         cfLabel.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -188,11 +201,11 @@ public class App extends javax.swing.JFrame implements Observer {
                 friendListValueChanged(evt);
             }
         });
-        jScrollPane2.setViewportView(friendList);
+        scrollFriendList.setViewportView(friendList);
 
-        getContentPane().add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 150, 260, 400));
+        getContentPane().add(scrollFriendList, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 150, 260, 400));
 
-        jTable.setForeground(new java.awt.Color(220, 232, 255));
+        scrollChat.setForeground(new java.awt.Color(220, 232, 255));
 
         chatTable.setBackground(new java.awt.Color(220, 232, 255));
         chatTable.setModel(new javax.swing.table.DefaultTableModel(
@@ -233,9 +246,9 @@ public class App extends javax.swing.JFrame implements Observer {
         chatTable.getTableHeader().setReorderingAllowed(false);
         chatTable.setUpdateSelectionOnSort(false);
         chatTable.setVerifyInputWhenFocusTarget(false);
-        jTable.setViewportView(chatTable);
+        scrollChat.setViewportView(chatTable);
 
-        getContentPane().add(jTable, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 150, 710, 380));
+        getContentPane().add(scrollChat, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 150, 710, 390));
 
         frButton.setBorder(null);
         frButton.setBorderPainted(false);
@@ -269,6 +282,7 @@ public class App extends javax.swing.JFrame implements Observer {
     }//GEN-LAST:event_frButtonActionPerformed
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
+
         String message = messageField.getText();
 
         if (message.isBlank()) {
@@ -277,8 +291,6 @@ public class App extends javax.swing.JFrame implements Observer {
 
         this.client.sendMessage(activeChatUser, message);
         this.updateChat();
-
-        this.messageField.setText("Message");
 
     }//GEN-LAST:event_sendButtonActionPerformed
 
@@ -303,6 +315,7 @@ public class App extends javax.swing.JFrame implements Observer {
         if (!passwordConfirmation.getIsValid()) {
             return;
         }
+
         boolean res = client.requestRemoveFriend(activeChatUser, passwordConfirmation.getName(), passwordConfirmation.getPassword());
 
         if (!res) {
@@ -327,19 +340,12 @@ public class App extends javax.swing.JFrame implements Observer {
         }
 
         this.activeChatUser = listUser.getUser();
-        this.nameLabel.setForeground(new java.awt.Color(255, 255, 255));
-        this.nameLabel.setFont(new java.awt.Font("Segoe UI", 1, 12));
+
         this.nameLabel.setText(listUser.getUser().getName());
 
         updateChat();
 
     }//GEN-LAST:event_friendListValueChanged
-
-    private void messageFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_messageFieldFocusGained
-
-        this.messageField.setText("");
-
-    }//GEN-LAST:event_messageFieldFocusGained
 
     public void updateChat() {
 
@@ -378,6 +384,9 @@ public class App extends javax.swing.JFrame implements Observer {
         this.chatTable.setModel(model);
         this.chatTable.getColumnModel().getColumn(1).setCellRenderer(renderer);
 
+        JScrollBar verticalScrollBar = this.scrollChat.getVerticalScrollBar();
+        verticalScrollBar.setValue(verticalScrollBar.getMaximum());
+
     }
 
     @Override
@@ -400,17 +409,16 @@ public class App extends javax.swing.JFrame implements Observer {
     private javax.swing.JButton addFriendButton;
     private javax.swing.JLabel cfLabel;
     private javax.swing.JTable chatTable;
-    private javax.swing.JLabel errorLabel;
     private javax.swing.JButton frButton;
     private javax.swing.JList<ListUser> friendList;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jTable;
     private javax.swing.JButton logoutButton;
     private javax.swing.JTextField messageField;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JLabel noChatLabel;
     private javax.swing.JLabel numerOfFriendsRequests;
     private javax.swing.JButton removeFriendButton;
+    private javax.swing.JScrollPane scrollChat;
+    private javax.swing.JScrollPane scrollFriendList;
     private javax.swing.JButton sendButton;
     private javax.swing.JLabel tittleLabel;
     // End of variables declaration//GEN-END:variables
