@@ -13,10 +13,11 @@ import server.ServerInterface;
 
 public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
-    private final ServerInterface serverObject;
-    private User user;
-    private final ArrayList<Observer> observers;
+    private final ServerInterface serverObject; // Objeto remoto del servidor
+    private User user; // Usuario que se ha logueado en el cliente
+    private final ArrayList<Observer> observers; // Observadores del cliente
 
+    // Constructor
     protected ClientImpl(ServerInterface serverObject) throws Exception {
 
         super();
@@ -29,12 +30,14 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    // Añade un observador al cliente
     public void addObserver(Observer observer) {
 
         this.observers.add(observer);
 
     }
 
+    // Elimina un observador del cliente
     public boolean requestFriend(String friendName, String name, String password) {
 
         try {
@@ -50,6 +53,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    // Inicia el proceso de login
     public boolean requestLogin(String name, String password) {
 
         try {
@@ -67,6 +71,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    // Inicia el proceso de validacion para verificar que es el usuario que dice ser
     public boolean requestValidation(String name, String password) {
 
         try {
@@ -82,6 +87,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    // Inicia el proceso de registro
     public boolean requestRegister(String name, String password) {
 
         try {
@@ -97,6 +103,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    // Inicia el proceso de logout
     public void requestLogout() {
 
         try {
@@ -111,6 +118,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    // Intenta aceptar una peticion de amistad
     public boolean requestAcceptFriendRequest(int requestId, String friendName, String name, String password) {
 
         try {
@@ -139,6 +147,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    // Intenta rechazar una peticion de amistad
     public boolean requestDeclineFriendRequest(int requestId, String friendName, String name, String password) {
 
         try {
@@ -168,6 +177,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    // Intenta eliminar a un amigo
     public boolean requestRemoveFriend(User friend, String name, String password) {
 
         try {
@@ -197,11 +207,13 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    // Intenta enviar un mensaje a un amigo
     @Override
     public void notifyMessage(ClientInterface friendClient, User user, String message) throws RemoteException {
 
         User friend = null;
 
+        // Buscamos el amigo que nos ha enviado el mensaje
         for (Map.Entry<User, ClientInterface> entry : this.user.getConnectedFriends().entrySet()) {
 
             if (entry.getValue().equals(friendClient)) {
@@ -212,15 +224,19 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
             }
 
         }
-
+        
+        // Si no encontramos el amigo, no hacemos nada
         if (friend == null || !friend.equals(user)) {
             return;
         }
 
+        // Añadimos el mensaje al chat
         Chat chat = this.user.getChats().get(friend);
 
+        // Si el chat no existe, lo creamos
         chat.addMessage(message, false);
 
+        // Notificamos a los observadores que se ha actualizado el chat
         for (Observer observer : this.observers) {
 
             observer.updateChats(friend);
@@ -229,6 +245,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    // Notifica a los observadores que se ha recibido una peticion de amistad
     @Override
     public void notifyFriendRequest(FriendRequest request) throws RemoteException {
 
@@ -242,6 +259,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    // Notifica a los observadores de que se ha conectado un amigo
     @Override
     public void notifyConnectedFriend(ClientInterface client, User user) throws RemoteException {
 
@@ -255,6 +273,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    // Notifica a los observadores el usuario se ha desconectado
     @Override
     public void notifyDisconnectedFriend(User user, boolean removeChat) throws RemoteException {
 
@@ -268,6 +287,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    // Se envía el mensaje y se avisa a los observadores que se ha actualizado el chat
     public void sendMessage(User user, String message) {
 
         try {
@@ -297,6 +317,7 @@ public class ClientImpl extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    // Se desconecta del servidor
     public void end() {
 
         try {

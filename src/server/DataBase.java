@@ -9,12 +9,23 @@ public class DataBase {
 
     private final Connection con;
 
+    
+    /**
+     * Data Base Connection
+     */
     public DataBase() throws SQLException {
 
-        this.con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "postgres");
+        this.con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "david");
 
     }
 
+    /**
+     * Register a new user in the database.
+     * 
+     * @param name register name
+     * @param password password for the user
+     * @return true if user successfully registered, false otherwise
+     */
     public boolean registerUser(String name, String password) {
 
         try {
@@ -37,6 +48,9 @@ public class DataBase {
 
     }
 
+    /**
+     * Represents a friend request between two users.
+     */
     public FriendRequest registerFriendRequest(String name, String friendName) {
 
         try {
@@ -83,6 +97,14 @@ public class DataBase {
 
     }
 
+    /**
+     * Accept a friend request.
+     * 
+     * @param requestId friend request id
+     * @param name user name that received the request
+     * @param friendName user name that sent the request
+     * @return true if the request was accepted, false otherwise
+     */
     public boolean acceptFriendRequest(int requestId, String name, String friendName) {
 
         try {
@@ -143,6 +165,14 @@ public class DataBase {
 
     }
 
+    /*
+     * Delete a friend request from the database.
+     *
+     * @param requestId the id of the friend request to decline
+     * @param name the name of the user receiving the friend request
+     * @param friendName the name of the user sending the friend request
+     * @return true if the friend request was successfully deleted, false otherwise
+     */
     public boolean declineFriendRequest(int requestId, String name, String friendName) {
 
         try {
@@ -186,6 +216,9 @@ public class DataBase {
 
     }
 
+    /**
+     * Gets a user from the database with the given name.
+     */
     public User getUser(String name) {
 
         try {
@@ -218,6 +251,9 @@ public class DataBase {
 
     }
 
+    /**
+     * Gets a user from the database with the given name and password.
+     */
     public User getUserWithPassword(String name, String password) {
 
         try {
@@ -250,6 +286,11 @@ public class DataBase {
 
     }
 
+    /**
+     * Gets a list of all the friends of a user.
+     * @param userId User id to get the friends from.
+     * @return List of friends.
+     */
     public ArrayList<User> getFriends(int userId) {
 
         try {
@@ -292,6 +333,11 @@ public class DataBase {
 
     }
 
+    /**
+     * Gets a list of all the friend requests received by a user.
+     * @param userId User id to get the friend requests from.
+     * @return List of friend requests.
+     */
     public ArrayList<FriendRequest> getFriendRequest(int userId) {
 
         try {
@@ -334,6 +380,12 @@ public class DataBase {
 
     }
 
+    /**
+     * Removes a friend from the list of friends of a user.
+     * @param name Name of the user that wants to remove a friend.
+     * @param friendName Name of the friend to be removed.
+     * @return true if the friend was successfully removed, false otherwise
+     */
     public boolean removeFriend(String name, String friendName) {
 
         try {
