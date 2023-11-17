@@ -291,6 +291,7 @@ public class App extends javax.swing.JFrame implements Observer {
 
         this.client.sendMessage(activeChatUser, message);
         this.updateChat();
+        this.messageField.setText("");
 
     }//GEN-LAST:event_sendButtonActionPerformed
 

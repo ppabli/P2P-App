@@ -111,7 +111,7 @@ public class Login extends javax.swing.JFrame {
 
         boolean res = client.requestRegister(nameText.getText(), new String(this.passwordField.getPassword()));
 
-        errorLabel.setOpaque(true);
+        errorLabel.setVisible(true);
 
         if (res) {
 
